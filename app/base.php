@@ -1,5 +1,6 @@
 <?php
 
+
 // ============================================================================
 // PHP Setups
 // ============================================================================
@@ -70,6 +71,15 @@ function get_file($key) {
     return null;
 }
 
+//Sorting Helpers
+function usort_link($col, $label, $usort, $uorder) {
+    $nextOrder = ($usort === $col && $uorder === 'asc') ? 'desc' : 'asc';
+    return "<a href='?usort=$col&uorder=$nextOrder#users'>$label" . ($usort === $col ? ($uorder === 'asc' ? ' ▲' : ' ▼') : '') . "</a>";
+}
+function sort_link($col, $label, $sort, $order) {
+    $nextOrder = ($sort === $col && $order === 'asc') ? 'desc' : 'asc';
+    return "<a href='?sort=$col&order=$nextOrder#products'>$label" . ($sort === $col ? ($order === 'asc' ? ' ▲' : ' ▼') : '') . "</a>";
+}
 // Crop, resize and save photo
 function save_photo($f, $folder, $width = 200, $height = 200) {
     $photo = uniqid() . '.jpg';
@@ -186,6 +196,7 @@ function err($key) {
 
 // Global user object
 $_user = $_SESSION['user'] ?? null;
+
 
 // Login user
 function login($user, $url = '/') {

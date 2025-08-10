@@ -48,4 +48,7 @@
         <a href="/page/men.php">Men</a>
         <a href="/page/women.php">Women</a>
         <a href="/page/kids.php">Kids</a>
+        <?php if ($_user && $_user->role === 'Admin'): ?>
+            <a href="/page/admin.php">Admin</a>
+        <?php endif; ?>
     </nav>
