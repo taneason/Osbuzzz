@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 10, 2025 at 12:03 PM
+-- Generation Time: Aug 10, 2025 at 05:37 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -22,6 +22,36 @@ SET time_zone = "+00:00";
 --
 CREATE DATABASE IF NOT EXISTS `osbuzz` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `osbuzz`;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `product`
+--
+
+CREATE TABLE `product` (
+  `product_id` int(11) NOT NULL,
+  `product_name` varchar(100) NOT NULL,
+  `brand` varchar(50) NOT NULL,
+  `category` varchar(50) DEFAULT 'Shoes',
+  `size` varchar(20) NOT NULL,
+  `color` varchar(30) NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `stock` int(11) NOT NULL DEFAULT 0,
+  `description` text DEFAULT NULL,
+  `photo` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `product`
+--
+
+INSERT INTO `product` (`product_id`, `product_name`, `brand`, `category`, `size`, `color`, `price`, `stock`, `description`, `photo`, `created_at`) VALUES
+(1, 'Way Of Wade 10', 'Lining', 'Shoes', '42', 'Black/White', 699.00, 10, 'High performance basketball shoes', NULL, '2025-08-10 15:32:28'),
+(2, 'Ultraboost', 'Adidas', 'Shoes', '41', 'White', 459.00, 15, 'Comfortable running shoes', NULL, '2025-08-10 15:32:28'),
+(3, 'Classic Sneakers', 'Nike', 'Shoes', '43', 'Red', 399.00, 8, 'Classic style everyday sneakers', NULL, '2025-08-10 15:32:28'),
+(4, 'Kids Runner', 'Puma', 'Shoes', '30', 'Blue', 199.00, 20, 'Lightweight kids running shoes', NULL, '2025-08-10 15:32:28');
 
 -- --------------------------------------------------------
 
@@ -56,6 +86,12 @@ INSERT INTO `user` (`id`, `username`, `email`, `password`, `name`, `address`, `p
 --
 
 --
+-- Indexes for table `product`
+--
+ALTER TABLE `product`
+  ADD PRIMARY KEY (`product_id`);
+
+--
 -- Indexes for table `user`
 --
 ALTER TABLE `user`
@@ -66,6 +102,12 @@ ALTER TABLE `user`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `product`
+--
+ALTER TABLE `product`
+  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `user`
