@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 10, 2025 at 05:37 PM
+-- Generation Time: Aug 10, 2025 at 08:13 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -48,7 +48,7 @@ CREATE TABLE `product` (
 --
 
 INSERT INTO `product` (`product_id`, `product_name`, `brand`, `category`, `size`, `color`, `price`, `stock`, `description`, `photo`, `created_at`) VALUES
-(1, 'Way Of Wade 10', 'Lining', 'Shoes', '42', 'Black/White', 699.00, 10, 'High performance basketball shoes', NULL, '2025-08-10 15:32:28'),
+(1, 'Way Of Wade 10', 'Lining', 'Shoes', '42', 'Black/White', 699.00, 10, NULL, '6898df0187375.jpg', '2025-08-10 15:32:28'),
 (2, 'Ultraboost', 'Adidas', 'Shoes', '41', 'White', 459.00, 15, 'Comfortable running shoes', NULL, '2025-08-10 15:32:28'),
 (3, 'Classic Sneakers', 'Nike', 'Shoes', '43', 'Red', 399.00, 8, 'Classic style everyday sneakers', NULL, '2025-08-10 15:32:28'),
 (4, 'Kids Runner', 'Puma', 'Shoes', '30', 'Blue', 199.00, 20, 'Lightweight kids running shoes', NULL, '2025-08-10 15:32:28');
@@ -76,7 +76,7 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id`, `username`, `email`, `password`, `name`, `address`, `phone`, `photo`, `role`) VALUES
-(13, 'eason', 'taneason1111@gmail.com', '7c222fb2927d828af22f592134e8932480637c0d', 'Tan Ea Son', 'No 6 Jalan Indah 10/5Taman Pertama', '0122226133', '687bd4293c090.jpg', ''),
+(13, 'eason', 'taneason1111@gmail.com', '7c222fb2927d828af22f592134e8932480637c0d', 'Tan Ea Son', 'No 6 Jalan Indah 10/5Taman Pertama', '0122226133', '6898d553e9814.jpg', 'Admin'),
 (14, '123123', 'taneason0912@gmail.com', '697f6f62764c05183042401e6bc74c6704a3da7d', '', 'sdasd', '0177438690', '687bcf112e8e1.jpg', ''),
 (15, 'Tan1221', 'taneason0000@gmail.com', '7c222fb2927d828af22f592134e8932480637c0d', '', '', '', '687ce54d6c885.jpg', ''),
 (16, '0123456789', '12@gmail.com', '4f409ed0d5a586b3fbd255922b5afc6eec549dc9', 'gdf', '', '017-743 8690', '68986494cf85f.jpg', '');
@@ -107,7 +107,7 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `product`
 --
 ALTER TABLE `product`
-  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `user`
