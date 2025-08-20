@@ -76,9 +76,13 @@ function usort_link($col, $label, $usort, $uorder) {
     $nextOrder = ($usort === $col && $uorder === 'asc') ? 'desc' : 'asc';
     return "<a href='?usort=$col&uorder=$nextOrder#users'>$label" . ($usort === $col ? ($uorder === 'asc' ? ' ▲' : ' ▼') : '') . "</a>";
 }
-function sort_link($col, $label, $sort, $order) {
-    $nextOrder = ($sort === $col && $order === 'asc') ? 'desc' : 'asc';
-    return "<a href='?sort=$col&order=$nextOrder#products'>$label" . ($sort === $col ? ($order === 'asc' ? ' ▲' : ' ▼') : '') . "</a>";
+// Helper for sort links that preserves search
+function sort_link($col, $label, $curSort, $curOrder, $search = '') {
+    $nextOrder = ($curSort === $col && $curOrder === 'asc') ? 'desc' : 'asc';
+    $arrow = '';
+    if ($curSort === $col) $arrow = $curOrder === 'asc' ? ' ▲' : ' ▼';
+    $searchParam = $search !== '' ? '&search=' . urlencode($search) : '';
+    return "<a href='?sort=$col&order=$nextOrder$searchParam'>$label$arrow</a>";
 }
 // Crop, resize and save photo
 function save_photo($f, $folder, $width = 200, $height = 200) {
@@ -115,7 +119,7 @@ function encode($value) {
 
 // Generate <input type='text'>
 function html_text($key, $attr = '') {
-    $value = encode($GLOBALS[$key] ?? '');
+    $value = encode($_POST[$key] ?? $GLOBALS[$key] ?? '');
     echo "<input type='text' id='$key' name='$key' value='$value' $attr >";
 }
 
@@ -170,6 +174,13 @@ function html_select($key, $items, $default = '- Select One -', $attr = '') {
 function html_file($key, $accept = '', $attr = '') {
     echo "<input type='file' id='$key' name='$key' accept='$accept' $attr>";
 }
+
+// Generate <textarea>
+function html_textarea($key, $attr = '') {
+    $value = encode($GLOBALS[$key] ?? '');
+    echo "<textarea id='$key' name='$key' $attr>$value</textarea>";
+}
+
 
 // ============================================================================
 // Error Handlings
@@ -255,5 +266,23 @@ function is_exists($value, $table, $field) {
     return $stm->fetchColumn() > 0;
 }
 
-//test github
-//u type something ok then
+$categories = [
+        'Running' => 'Running Shoes',
+        'Basketball' => 'Basketball Shoes',
+        'Casual' => 'Casual Shoes',
+        'Formal' => 'Formal Shoes',
+        'Other' => 'Other'
+    ];
+
+$SIZES = [
+    '36' => 'EU 36',
+    '37' => 'EU 37',
+    '38' => 'EU 38',
+    '39' => 'EU 39',
+    '40' => 'EU 40',
+    '41' => 'EU 41',
+    '42' => 'EU 42',
+    '43' => 'EU 43',
+    '44' => 'EU 44',
+    '45' => 'EU 45'
+];

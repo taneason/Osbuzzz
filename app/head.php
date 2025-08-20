@@ -29,7 +29,7 @@
                 <a href="/page/cart.php" class="cart-icon">🛒</a> <!-- 新增购物车图标 -->
             </nav>
         </div>
-        <a href="/page/profile.php"><img class="header-avatar" src="<?= $_user->photo ? '/photos/' . $_user->photo : '/images/default-avatar.png' ?>"></a>
+        <a href="/page/profile.php"><img class="header-avatar" src="<?= $_user->photo ? '/images/userAvatar/' . $_user->photo : '/images/default-avatar.png' ?>"></a>
         <?php else: ?>
         <div class="login_register">
             <nav>
@@ -43,12 +43,14 @@
 </header>
 
     <nav>
+        <?php if ($_user && $_user->role === 'Admin'): ?>
+            <a href="/page/admin/admin_user.php">User Management</a>
+            <a href="/page/admin/admin_product.php">Product Management</a>
+        <?php else: ?>
         <a href="/">Home</a>
         <a href="/page/sales.php">Sales</a>
         <a href="/page/men.php">Men</a>
         <a href="/page/women.php">Women</a>
         <a href="/page/kids.php">Kids</a>
-        <?php if ($_user && $_user->role === 'Admin'): ?>
-            <a href="/page/admin.php">Admin</a>
         <?php endif; ?>
     </nav>

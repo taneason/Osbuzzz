@@ -23,7 +23,7 @@ include '../head.php';
     <div class="profile-edit-wrapper">
         <h1>My Profile</h1>
         <div class="profile-edit-avatar">
-            <img src="<?= $_user->photo ? '/photos/' . $_user->photo : '/images/default-avatar.png' ?>" alt="User Avatar">
+            <img src="<?= $_user->photo ? '/images/userAvatar/' . $_user->photo : '/images/default-avatar.png' ?>" alt="User Avatar">
         </div>
         <div class="profile-edit-form">
             <div class="edit-input-box">

@@ -1,4 +1,3 @@
-
 <?php
 require '../base.php';
 auth();
@@ -21,18 +20,19 @@ if (is_post()) {
                 $err['photo'] = 'Maximum 1MB';
             } else {
                 if ($user->photo) {
-                    @unlink("../photos/" . $user->photo);
+                    @unlink("../images/userAvatar/" . $user->photo);
                 }
-                $photo = save_photo($f, '../photos');
+                $photo = save_photo($f, '../images/userAvatar');
             }
         } else {
             $err['photo'] = 'Must be image';
         }
     }
 
-    if ($name == '') {
+    /*if ($name == '') {
         $err['name'] = 'Name is required';
-    } else if (strlen($name) > 100) {
+    } */
+    if (strlen($name) > 100) {
         $err['name'] = 'Maximum 100 characters';
     }
     if ($email == '') {
@@ -48,20 +48,22 @@ if (is_post()) {
             $err['email'] = 'This email is already registered.';
         }
     }
-    if ($phone == '') {
+    /*if ($phone == '') {
         $err['phone'] = 'Phone number is required';
-    } else if (strlen($phone) > 20) {
-        $err['phone'] = 'Maximum 20 characters';
-    } else if (!preg_match('/^[0-9][0-9\-\+ ]*$/', $phone)) {
-        $err['phone'] = 'Invalid phone format';
-    } else {
-        $stm = $_db->prepare('SELECT COUNT(*) FROM user WHERE phone = ? AND id != ?');
-        $stm->execute([$phone, $user->id]);
+    }*/ 
+    if ($phone != ''){
+        if (strlen($phone) > 20) {
+            $err['phone'] = 'Maximum 20 characters';
+        } else if (!preg_match('/^[0-9][0-9\-\+ ]*$/', $phone)) {
+            $err['phone'] = 'Invalid phone format';
+        } else {
+            $stm = $_db->prepare('SELECT COUNT(*) FROM user WHERE phone = ? AND id != ?');
+            $stm->execute([$phone, $user->id]);
         if ($stm->fetchColumn() > 0) {
             $err['phone'] = 'This phone number is already registered.';
         }
+        }
     }
-
     if (!$err) {
         $stm = $_db->prepare("UPDATE user SET name=?, email=?, phone=?, photo=? WHERE id=?");
         $stm->execute([$name, $email, $phone, $photo, $user->id]);
@@ -90,27 +92,27 @@ include '../head.php';
         <h1>Edit Profile</h1>
         <form class="profile-edit-form" method="post" enctype="multipart/form-data">
             <div class="profile-edit-avatar">
-                <img src="<?= $photo ? '/photos/' . $photo : '/images/default-avatar.png' ?>" alt="Current Avatar">
+                <img src="<?= $photo ? '/images/userAvatar/' . $photo : '/images/default-avatar.png' ?>" alt="Current Avatar">
             </div>
             <div class="edit-input-box">
                 <label>New Avatar:
-                    <input type="file" name="photo" accept="image/*">
+                    <?= html_file('photo', 'image/*') ?>
                 </label>
                 <?php if(isset($err['photo'])): ?><span class="err"><?= $err['photo'] ?></span><?php endif; ?>
             </div>
             <div class="edit-input-box">
                 <label>Name:</label>
-                <input type="text" name="name" maxlength="100" value="<?= htmlspecialchars($name) ?>">
+                <?= html_text('name', "maxlength='100'") ?>
                 <?php if(isset($err['name'])): ?><span class="err"><?= $err['name'] ?></span><?php endif; ?>
             </div>
             <div class="edit-input-box">
                 <label>Email:</label>
-                <input type="email" name="email" maxlength="100" value="<?= htmlspecialchars($email) ?>">
+                <?= html_text('email', "type='email' maxlength='100'") ?>
                 <?php if(isset($err['email'])): ?><span class="err"><?= $err['email'] ?></span><?php endif; ?>
             </div>
             <div class="edit-input-box">
                 <label>Phone:</label>
-                <input type="text" name="phone" maxlength="20" value="<?= htmlspecialchars($phone) ?>">
+                <?= html_text('phone', "maxlength='20'") ?>
                 <?php if(isset($err['phone'])): ?><span class="err"><?= $err['phone'] ?></span><?php endif; ?>
             </div>
             <button class="edit-btn" type="submit">Save</button>

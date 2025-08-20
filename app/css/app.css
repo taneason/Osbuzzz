@@ -1,3 +1,138 @@
+.admin-form-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #333;
+}
+.admin-form-subtitle {
+    text-align: center;
+    font-size: 1.3rem;
+    margin: 20px 0 10px;
+    font-weight: bold;
+    color: #333;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 6px;
+}
+
+/* Form Grid */
+.admin-edit-form {
+    display: grid;
+    gap: 20px;
+}
+
+.admin-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* Full Row */
+.admin-form-row-full {
+    grid-column: span 2;
+}
+
+/* Label */
+.admin-form-row label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #444;
+}
+
+/* Inputs */
+.admin-form-row input[type="text"],
+.admin-form-row input[type="number"],
+.admin-form-row input[type="file"],
+.admin-form-row textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.admin-form-row input:focus,
+.admin-form-row textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 4px rgba(0,123,255,0.3);
+    outline: none;
+}
+
+
+/* Photo Input Special */
+.admin-form-photo-row input[type="file"] {
+    padding: 6px;
+}
+
+/* Buttons */
+.admin-form-btn-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+.admin-btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.edit-btn {
+    background: #007bff;
+    color: white;
+}
+
+.edit-btn:hover {
+    background: #0056b3;
+    transform: scale(1.05);
+}
+
+.cancel-btn {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.cancel-btn:hover {
+    background: #c7c7c7;
+    transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .admin-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+label > * {
+    vertical-align: text-top;
+}
+
+.form {
+    display: grid;
+    grid: auto / auto auto auto;
+    gap: 5px;
+    place-content: start;
+    place-items: center start;
+}
+
+.form > label:not(:has(*)) {
+    place-self: stretch;
+    background: #ccc;
+    font-weight: bold;
+    padding: 5px;
+}
+
+.form > section {
+    grid-column: 1 / -1;
+}
 
 /* Admin Product Table Styles */
 .admin-product-table { border-collapse: collapse; width: 100%; background: #fff; }
@@ -134,7 +269,39 @@ body, input, button, textarea, select {
     font: 16px 'Roboto', sans-serif;
 }
 
+/* Select ---------------------------------------------------------------------------------------------------*/
+select {
+  width: 100%;
+  padding: 10.5px 12px;
+  
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
 
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+
+  background: url("data:image/svg+xml;utf8,<svg fill='gray' height='14' viewBox='0 0 24 24' width='14' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>")
+              no-repeat right 10px center;
+  background-color: #fff;
+}
+
+
+select:hover {
+  border-color: #007BFF;
+}
+select:focus {
+  outline: none;
+  border-color: #007BFF;
+  box-shadow: 0 0 5px rgba(0,123,255,0.5);
+}
+/* ============================================================= */
 /* flash MSG */
 #info {
     position: fixed;
