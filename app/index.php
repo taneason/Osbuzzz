@@ -4,6 +4,7 @@ require 'base.php';
 include 'head.php';
 ?>
 
+<?php if (!$_user ||$_user->role != 'Admin'): ?>
 <main>
     <section class="hero">
         <!-- 多图轮播背景 -->
@@ -53,5 +54,18 @@ include 'head.php';
     </div>
 </section>
 </main>
+<?php else: ?>
+<main>
+    <h1 class="admin-title">Welcome to Admin Dashboard</h1>
+    <div class="admin-dashboard">
+        <div class="admin-card">
+            <a href="/page/admin/admin_user.php">User Management</a>
+        </div>
+        <div class="admin-card">
+            <a href="/page/admin/admin_product.php">Product Management</a>
+        </div>
+    </div>
+</main>
+<?php endif ?>  
 <?php
 include 'foot.php';
