@@ -274,6 +274,8 @@ $categories = [
         'Other' => 'Other'
     ];
 
+
+// Shoe Sizes
 $SIZES = [
     '36' => 'EU 36',
     '37' => 'EU 37',
