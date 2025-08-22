@@ -72,9 +72,10 @@ function get_file($key) {
 }
 
 //Sorting Helpers
-function usort_link($col, $label, $usort, $uorder) {
+function usort_link($col, $label, $usort, $uorder, $search = '') {
     $nextOrder = ($usort === $col && $uorder === 'asc') ? 'desc' : 'asc';
-    return "<a href='?usort=$col&uorder=$nextOrder#users'>$label" . ($usort === $col ? ($uorder === 'asc' ? ' ▲' : ' ▼') : '') . "</a>";
+    $searchParam = $search !== '' ? '&search=' . urlencode($search) : '';
+    return "<a href='?usort=$col&uorder=$nextOrder$searchParam#users'>$label" . ($usort === $col ? ($uorder === 'asc' ? ' ▲' : ' ▼') : '') . "</a>";
 }
 // Helper for sort links that preserves search
 function sort_link($col, $label, $curSort, $curOrder, $search = '') {
