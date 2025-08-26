@@ -43,24 +43,25 @@ include '../../head.php';
         <?php if (!empty($products)): ?>
         <div class="products-grid">
             <?php foreach ($products as $product): ?>
-            <div class="product-card">
-                <div class="product-image">
-                    <?php 
-                    $photo_src = $product->main_photo ?: ($product->photo ?: 'defaultProduct.png');
-                    ?>
-                    <img src="../../images/Products/<?= $photo_src ?>" alt="<?= htmlspecialchars($product->product_name) ?>" loading="lazy">
-                    <button class="favourite-btn">♡</button>
-                </div>
-                <div class="product-info">
-                    <span class="brand"><?= htmlspecialchars($product->brand) ?></span>
-                    <h3><?= htmlspecialchars($product->product_name) ?></h3>
-                    <div class="category-tag" style="font-size: 12px; color: #666; margin: 5px 0;">
-                        <?= htmlspecialchars($product->category) ?>
+            <a href="product_detail.php?id=<?= $product->product_id ?>" class="product-card-link">
+                <div class="product-card">
+                    <div class="product-image">
+                        <?php 
+                        $photo_src = $product->main_photo ?: ($product->photo ?: 'defaultProduct.png');
+                        ?>
+                        <img src="../../images/Products/<?= $photo_src ?>" alt="<?= htmlspecialchars($product->product_name) ?>" loading="lazy">
                     </div>
-                    <div class="price">RM <?= number_format($product->price, 2) ?></div>
-                    <button class="shop" data-get="product_detail.php?id=<?= $product->product_id ?>">Shop</button>
-                </div>  
-            </div>
+                    <div class="product-info">
+                        <span class="brand"><?= htmlspecialchars($product->brand) ?></span>
+                        <h3><?= htmlspecialchars($product->product_name) ?></h3>
+                        <div class="category-tag" style="font-size: 12px; color: #666; margin: 5px 0;">
+                            <?= htmlspecialchars($product->category) ?>
+                        </div>
+                        <div class="price">RM <?= number_format($product->price, 2) ?></div>
+                        <button class="shop" onclick="event.preventDefault(); window.location.href='product_detail.php?id=<?= $product->product_id ?>'">Shop</button>
+                    </div>  
+                </div>
+            </a>
             <?php endforeach; ?>
         </div>
         
