@@ -10,6 +10,7 @@
                     </div>
                 </p>
             </div>
+            <?php if (!$_user || $_user->role !== 'Admin'): ?>
             <div class="footer-content">
                 <h3>Shopping</h3>
                 <ul class="list">
@@ -21,24 +22,34 @@
                     <li><a href="/page/shop/sales.php">Sales</a></li>
                 </ul>
             </div>  
+            <?php endif; ?>
+            <?php if ($_user && $_user->role === 'Admin'): ?>
             <div class="footer-content">
-                <h3>About</h3>
+                <h3>Admin Panel</h3>
+                <ul class="list">
+                    <li><a href="/">Dashboard</a></li>
+                    <li><a href="/page/admin/admin_product.php">Manage Products</a></li>
+                    <li><a href="/page/admin/admin_user.php">Manage Users</a></li>
+                    <li><a href="/page/user/profile.php">My Profile</a></li>
+                </ul>
+            </div>
+            <?php else: ?>
+            <div class="footer-content">
+                <h3>Quick Links</h3>
                 <ul class="list">
                     <li><a href="/">Home</a></li>
-                    <?php if (!$_user || $_user->role !== 'Admin'): ?>
+                    <?php if (!$_user): ?>
                     <li><a href="/page/shop/search.php">Search</a></li>
-                    <?php endif; ?>
-                    <?php if ($_user): ?>
-                    <li><a href="/page/user/profile.php">My Profile</a></li>
-                    <?php if ($_user->role !== 'Admin'): ?>
-                    <li><a href="/page/shop/cart.php">My Cart</a></li>
-                    <?php endif; ?>
-                    <?php else: ?>
                     <li><a href="/page/user/login.php">Login</a></li>
                     <li><a href="/page/user/signup.php">Register</a></li>
+                    <?php else: ?>
+                    <li><a href="/page/shop/search.php">Search</a></li>
+                    <li><a href="/page/user/profile.php">My Profile</a></li>
+                    <li><a href="/page/shop/cart.php">My Cart</a></li>
                     <?php endif; ?>
                 </ul>
             </div>
+            <?php endif; ?>
         </div>
         <div class="bottom-bar">
             <small><i><p>Copyright © 2025 Osbuzzz - Premium Footwear Store</p></i></small>
