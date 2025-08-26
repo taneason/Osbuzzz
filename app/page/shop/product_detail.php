@@ -388,7 +388,9 @@ include '../../head.php';
                     <label class="option-label">Size:</label>
                     <div class="size-options">
                         <?php foreach (explode(',', $product->available_sizes) as $size): ?>
-                        <div class="size-option" onclick="selectOption(this, 'size')"><?= trim($size) ?></div>
+                        <div class="size-option" onclick="selectOption(this, 'size')" data-size="<?= trim($size) ?>">
+                            <?= format_size(trim($size)) ?>
+                        </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
@@ -402,12 +404,12 @@ include '../../head.php';
                     <input type="number" class="quantity-input" id="quantity" value="1" min="1" max="<?= $product->total_stock ?>">
                     <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
                 </div>
-                <div class="stock-info"><?= $product->total_stock ?> in stock</div>
+                <div class="stock-info" id="stockInfo"><?= $product->total_stock ?> in stock</div>
             </div>
 
             <div class="action-buttons">
                 <button class="btn-primary" onclick="addToCart()">Add to Cart</button>
-                <button class="btn-secondary" onclick="addToWishlist()">♡ Wishlist</button>
+                <button class="btn-secondary" onclick="buyNow()">Buy Now</button>
             </div>
 
             <div class="product-features">
@@ -436,6 +438,13 @@ include '../../head.php';
 
 <script>
 let selectedSize = null;
+let currentStock = <?= $product->total_stock ?>;
+let cartQuantity = 0;
+
+// Load initial cart quantity
+window.addEventListener('load', function() {
+    updateCartQuantityDisplay();
+});
 
 function changeMainImage(thumbnail, index) {
     const mainImage = document.getElementById('mainImage');
@@ -453,21 +462,130 @@ function selectOption(element, type) {
     element.classList.add('selected');
     
     if (type === 'size') {
-        selectedSize = element.textContent.trim();
+        selectedSize = element.dataset.size || element.textContent.trim().replace('EU ', '');
+        updateStockInfo();
+    }
+}
+
+function updateStockInfo() {
+    if (selectedSize) {
+        // Get stock for selected size
+        fetch(`stock_api.php?action=get_size_stock&product_id=<?= $product->product_id ?>&size=${selectedSize}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                currentStock = data.available_stock;
+                cartQuantity = data.cart_quantity;
+                
+                const stockInfo = document.getElementById('stockInfo');
+                const quantityInput = document.getElementById('quantity');
+                
+                if (currentStock <= 0) {
+                    stockInfo.innerHTML = '<span style="color: red;">Out of stock</span>';
+                    if (cartQuantity > 0) {
+                        stockInfo.innerHTML += `<br><small>You have ${cartQuantity} in cart</small>`;
+                    }
+                    quantityInput.max = 0;
+                    quantityInput.value = 0;
+                } else {
+                    stockInfo.innerHTML = `${data.stock} total in stock`;
+                    if (cartQuantity > 0) {
+                        stockInfo.innerHTML += `<br><small>You have ${cartQuantity} in cart (${currentStock} available to add)</small>`;
+                    }
+                    quantityInput.max = currentStock;
+                    quantityInput.value = Math.min(parseInt(quantityInput.value) || 1, currentStock);
+                }
+                
+                updateAddToCartButton();
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching stock info:', error);
+        });
+    } else {
+        // Reset to total stock
+        fetch(`stock_api.php?action=get_total_stock&product_id=<?= $product->product_id ?>`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                currentStock = data.available_stock;
+                cartQuantity = data.cart_quantity;
+                
+                const stockInfo = document.getElementById('stockInfo');
+                const quantityInput = document.getElementById('quantity');
+                
+                if (currentStock <= 0) {
+                    stockInfo.innerHTML = '<span style="color: red;">Out of stock</span>';
+                    if (cartQuantity > 0) {
+                        stockInfo.innerHTML += `<br><small>You have ${cartQuantity} in cart</small>`;
+                    }
+                    quantityInput.max = 0;
+                    quantityInput.value = 0;
+                } else {
+                    stockInfo.innerHTML = `${data.total_stock} total in stock`;
+                    if (cartQuantity > 0) {
+                        stockInfo.innerHTML += `<br><small>You have ${cartQuantity} in cart (${currentStock} available to add)</small>`;
+                    }
+                    quantityInput.max = currentStock;
+                    quantityInput.value = Math.min(parseInt(quantityInput.value) || 1, currentStock);
+                }
+                
+                updateAddToCartButton();
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching stock info:', error);
+        });
+    }
+}
+
+function updateCartQuantityDisplay() {
+    updateStockInfo();
+}
+
+function updateAddToCartButton() {
+    const addToCartBtn = document.querySelector('.btn-primary');
+    const buyNowBtn = document.querySelector('.btn-secondary');
+    
+    if (currentStock <= 0) {
+        addToCartBtn.disabled = true;
+        addToCartBtn.textContent = 'Out of Stock';
+        addToCartBtn.style.background = '#ccc';
+        addToCartBtn.style.cursor = 'not-allowed';
+        
+        buyNowBtn.disabled = true;
+        buyNowBtn.style.background = '#ccc';
+        buyNowBtn.style.cursor = 'not-allowed';
+    } else {
+        addToCartBtn.disabled = false;
+        addToCartBtn.textContent = 'Add to Cart';
+        addToCartBtn.style.background = '#007cba';
+        addToCartBtn.style.cursor = 'pointer';
+        
+        buyNowBtn.disabled = false;
+        buyNowBtn.style.background = '#f5f5f5';
+        buyNowBtn.style.cursor = 'pointer';
     }
 }
 
 function changeQuantity(delta) {
     const quantityInput = document.getElementById('quantity');
-    const currentValue = parseInt(quantityInput.value);
-    const maxStock = parseInt(quantityInput.max);
+    const currentValue = parseInt(quantityInput.value) || 0;
+    const maxStock = parseInt(quantityInput.max) || 0;
     
     const newValue = Math.max(1, Math.min(maxStock, currentValue + delta));
     quantityInput.value = newValue;
 }
 
 function addToCart() {
-    const quantity = document.getElementById('quantity').value;
+    // Check if user is logged in
+    <?php if (!$_user): ?>
+    alert('Please login to add items to cart');
+    window.location.href = '../user/login.php';
+    return;
+    <?php endif; ?>
+    
+    const quantity = parseInt(document.getElementById('quantity').value) || 0;
     
     // Basic validation
     if (!selectedSize && document.querySelector('.size-option')) {
@@ -475,13 +593,116 @@ function addToCart() {
         return;
     }
     
-    // Here you would typically send data to cart.php or handle cart logic
-    alert(`Added ${quantity} item(s) to cart!\nSize: ${selectedSize || 'N/A'}`);
+    if (quantity <= 0) {
+        alert('Please select a valid quantity');
+        return;
+    }
+    
+    if (quantity > currentStock) {
+        alert(`Only ${currentStock} item(s) available`);
+        return;
+    }
+    
+    // Disable button during request
+    const addToCartBtn = document.querySelector('.btn-primary');
+    const originalText = addToCartBtn.textContent;
+    addToCartBtn.disabled = true;
+    addToCartBtn.textContent = 'Adding...';
+    
+    // Send data to add to cart
+    const formData = new FormData();
+    formData.append('product_id', <?= $product->product_id ?>);
+    formData.append('quantity', quantity);
+    formData.append('size', selectedSize || '');
+    formData.append('action', 'add_to_cart');
+    
+    fetch('cart_handler.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update stock info and refresh page to show flash message
+            updateStockInfo();
+            window.location.reload();
+        } else {
+            alert(data.message || 'Failed to add item to cart');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to add item to cart');
+    })
+    .finally(() => {
+        // Re-enable button
+        addToCartBtn.disabled = false;
+        addToCartBtn.textContent = originalText;
+    });
 }
 
-function addToWishlist() {
-    // Handle wishlist logic here
-    alert('Added to wishlist!');
+function buyNow() {
+    // Check if user is logged in
+    <?php if (!$_user): ?>
+    alert('Please login to purchase items');
+    window.location.href = '../user/login.php';
+    return;
+    <?php endif; ?>
+    
+    const quantity = parseInt(document.getElementById('quantity').value) || 0;
+    
+    // Basic validation
+    if (!selectedSize && document.querySelector('.size-option')) {
+        alert('Please select a size');
+        return;
+    }
+    
+    if (quantity <= 0) {
+        alert('Please select a valid quantity');
+        return;
+    }
+    
+    if (quantity > currentStock) {
+        alert(`Only ${currentStock} item(s) available`);
+        return;
+    }
+    
+    // Add to cart first, then redirect to cart
+    const formData = new FormData();
+    formData.append('product_id', <?= $product->product_id ?>);
+    formData.append('quantity', quantity);
+    formData.append('size', selectedSize || '');
+    formData.append('action', 'add_to_cart');
+    
+    fetch('cart_handler.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Redirect to cart page
+            window.location.href = 'cart.php';
+        } else {
+            alert(data.message || 'Failed to add item to cart');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to add item to cart');
+    });
+}
+
+function updateCartCount() {
+    fetch('cart_handler.php?action=get_count')
+    .then(response => response.json())
+    .then(data => {
+        const cartCount = document.querySelector('.cart-count');
+        if (cartCount && data.count !== undefined) {
+            cartCount.textContent = data.count;
+        }
+    })
+    .catch(error => console.error('Error updating cart count:', error));
 }
 
 function openImageModal(imageSrc, productName) {
@@ -509,8 +730,8 @@ document.addEventListener('keydown', function(event) {
 
 // Update quantity input validation
 document.getElementById('quantity').addEventListener('input', function() {
-    const value = parseInt(this.value);
-    const max = parseInt(this.max);
+    const value = parseInt(this.value) || 0;
+    const max = parseInt(this.max) || 0;
     
     if (value < 1) this.value = 1;
     if (value > max) this.value = max;

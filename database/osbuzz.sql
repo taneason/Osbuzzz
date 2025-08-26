@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 26, 2025 at 05:56 PM
+-- Generation Time: Aug 26, 2025 at 06:57 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -22,6 +22,29 @@ SET time_zone = "+00:00";
 --
 CREATE DATABASE IF NOT EXISTS `osbuzz` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `osbuzz`;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cart`
+--
+
+CREATE TABLE `cart` (
+  `cart_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL DEFAULT 1,
+  `size` varchar(10) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `cart`
+--
+
+INSERT INTO `cart` (`cart_id`, `user_id`, `product_id`, `quantity`, `size`, `created_at`, `updated_at`) VALUES
+(4, 18, 2, 2, '43', '2025-08-26 16:54:02', '2025-08-26 16:57:07');
 
 -- --------------------------------------------------------
 
@@ -45,7 +68,7 @@ CREATE TABLE `product` (
 --
 
 INSERT INTO `product` (`product_id`, `product_name`, `brand`, `category`, `price`, `description`, `photo`, `created_at`) VALUES
-(1, 'Way Of Wade 10', 'Lining', 'Casual', 699.00, '', '68a58e71d37ce.jpg', '2025-08-10 15:32:28'),
+(1, 'Way Of Wade 10', 'Lining', 'Casual', 699.00, '', '68addf803e726.jpg', '2025-08-10 15:32:28'),
 (2, 'Ultraboost', 'Adidas', 'Formal', 459.00, 'Comfortable running shoes', NULL, '2025-08-10 15:32:28'),
 (3, 'Classic Sneakers', 'Nike', 'Basketball', 399.00, 'Classic style everyday sneakers', NULL, '2025-08-10 15:32:28'),
 (4, 'Kids Runner', 'Puma', 'Other', 199.00, 'Lightweight kids running shoes', NULL, '2025-08-10 15:32:28');
@@ -70,8 +93,11 @@ CREATE TABLE `product_photos` (
 --
 
 INSERT INTO `product_photos` (`photo_id`, `product_id`, `photo_filename`, `is_main_photo`, `display_order`, `created_at`) VALUES
-(1, 1, '68a58e71d37ce.jpg', 1, 0, '2025-08-26 11:40:04'),
-(4, 1, '68add48616827.jpg', 0, 1, '2025-08-26 15:36:38');
+(1, 1, '68addf803e726.jpg', 1, 0, '2025-08-26 11:40:04'),
+(6, 1, '68ade249f2e27.jpg', 0, 1, '2025-08-26 16:35:22'),
+(7, 1, '68ade24a068b9.jpg', 0, 2, '2025-08-26 16:35:22'),
+(8, 1, '68ade24a0d1a2.jpg', 0, 3, '2025-08-26 16:35:22'),
+(9, 1, '68ade24a139d3.jpg', 0, 4, '2025-08-26 16:35:22');
 
 -- --------------------------------------------------------
 
@@ -143,6 +169,15 @@ INSERT INTO `user` (`id`, `username`, `email`, `password`, `name`, `address`, `p
 --
 
 --
+-- Indexes for table `cart`
+--
+ALTER TABLE `cart`
+  ADD PRIMARY KEY (`cart_id`),
+  ADD UNIQUE KEY `unique_cart_item` (`user_id`,`product_id`,`size`),
+  ADD KEY `fk_cart_user` (`user_id`),
+  ADD KEY `fk_cart_product` (`product_id`);
+
+--
 -- Indexes for table `product`
 --
 ALTER TABLE `product`
@@ -175,6 +210,12 @@ ALTER TABLE `user`
 --
 
 --
+-- AUTO_INCREMENT for table `cart`
+--
+ALTER TABLE `cart`
+  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
 -- AUTO_INCREMENT for table `product`
 --
 ALTER TABLE `product`
@@ -184,7 +225,7 @@ ALTER TABLE `product`
 -- AUTO_INCREMENT for table `product_photos`
 --
 ALTER TABLE `product_photos`
-  MODIFY `photo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `photo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `product_variants`
@@ -201,6 +242,13 @@ ALTER TABLE `user`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `cart`
+--
+ALTER TABLE `cart`
+  ADD CONSTRAINT `fk_cart_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_cart_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `product_photos`

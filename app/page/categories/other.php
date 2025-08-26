@@ -28,7 +28,6 @@ include '../../head.php';
                 $photo_src = $product->main_photo ?: ($product->photo ?: 'defaultProduct.png');
                 ?>
                 <img src="../../images/Products/<?= $photo_src ?>" alt="<?= htmlspecialchars($product->product_name) ?>" loading="lazy">
-                <button class="favourite-btn">♡</button>
             </div>
             <div class="product-info">
                 <span class="brand"><?= htmlspecialchars($product->brand) ?></span>

@@ -1,3 +1,10 @@
+<?php
+// Get cart count if user is logged in
+$cart_count = 0;
+if ($_user) {
+    $cart_count = cart_get_count();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,6 +21,21 @@
             if (searchTerm) {
                 window.location.href = '/page/shop/search.php?q=' + encodeURIComponent(searchTerm);
             }
+        }
+        
+        // Update cart count dynamically
+        function updateHeaderCartCount() {
+            <?php if ($_user && $_user->role !== 'Admin'): ?>
+            fetch('/page/shop/cart_handler.php?action=get_count')
+            .then(response => response.json())
+            .then(data => {
+                const cartCountElement = document.querySelector('.cart-count');
+                if (cartCountElement && data.count !== undefined) {
+                    cartCountElement.textContent = data.count;
+                }
+            })
+            .catch(error => console.error('Error updating cart count:', error));
+            <?php endif; ?>
         }
         
         // Enter key search
@@ -270,7 +292,7 @@
                 <div class="user-section">
                     <?php if ($_user->role !== 'Admin'): ?>
                     <a href="/page/shop/cart.php" class="cart-link">
-                        🛒 <span class="cart-count">0</span>
+                        🛒 <span class="cart-count"><?= $cart_count ?></span>
                     </a>
                     <?php endif; ?>
                     <div class="user-dropdown">
