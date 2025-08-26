@@ -1,5 +1,5 @@
 <?php
-require '../base.php';
+require '../../base.php';
 
 
 $error_class = '';
@@ -30,7 +30,7 @@ if (is_post()) {
     }
 }
 $_title = 'Sign Up';
-include '../signuphead.php';
+include '../../signuphead.php';
 ?>
 <div class="signup_body">
     <main>
@@ -49,7 +49,7 @@ include '../signuphead.php';
 
                     <div class="login_link">
                         <p>Have an account? 
-                        <a href="/page/login.php"> Log In</a>
+                        <a href="/page/user/login.php"> Log In</a>
                     </div>
                 </form>
             </div>
@@ -58,4 +58,4 @@ include '../signuphead.php';
 </div>
 
 <?php
-include '../foot.php';
+include '../../foot.php';

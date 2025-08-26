@@ -14,28 +14,28 @@ include 'head.php';
         <div class="hero-content">
             <h1>New Season Collection</h1>
             <p>Discover the latest trends in fashion</p>
-            <a href="/page/shop.php" class="cta-button">Shop Now</a>
+            <a href="/page/shop/sales.php" class="cta-button">Shop Now</a>
         </div>
     </section>
 </main>
 
     <section class="featured-categories">
-        <div class="category-card" onclick="location.href='/page/men.php'">
-            <img src="/images/menu/men.png" alt="Men">
+        <div class="category-card" onclick="location.href='/page/categories/running.php'">
+            <img src="/images/menu/men.png" alt="Running">
             <div class="category-overlay">
-                <h3>Men's</h3>
+                <h3>Running</h3>
             </div>
         </div>
-        <div class="category-card" onclick="location.href='/page/women.php'">
-            <img src="/images/menu/women.png" alt="Women">
+        <div class="category-card" onclick="location.href='/page/categories/casual.php'">
+            <img src="/images/menu/women.png" alt="Casual">
             <div class="category-overlay">
-                <h3>Women's</h3>
+                <h3>Casual</h3>
             </div>
         </div>
-        <div class="category-card" onclick="location.href='/page/kids.php'">
-            <img src="/images/menu/kids.png" alt="Kids">
+        <div class="category-card" onclick="location.href='/page/categories/basketball.php'">
+            <img src="/images/menu/kids.png" alt="Basketball">
             <div class="category-overlay">
-                <h3>Kids</h3>
+                <h3>Basketball</h3>
             </div>
         </div>
     </section>
@@ -49,7 +49,7 @@ include 'head.php';
         <div class="promo-content">
             <h2>Summer Sale</h2>
             <p>30% Off For Selected Items</p>
-            <a href="/page/sales.php" class="cta-button">Shop Sale</a>
+            <a href="/page/shop/sales.php" class="cta-button">Shop Sale</a>
         </div>
     </div>
 </section>

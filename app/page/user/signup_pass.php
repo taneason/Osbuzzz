@@ -1,9 +1,9 @@
 <?php
-require '../base.php';
+require '../../base.php';
 
 $email = $_SESSION['email'];
 if (!$email) {
-    redirect('/page/signup.php');
+    redirect('/page/user/signup.php');
 }
 
 $error_class_password='';
@@ -62,7 +62,7 @@ if (is_post()) {
 }
 
 $_title = 'Sign Up';
-include '../signuphead.php';
+include '../../signuphead.php';
 ?>
       
 <div class="pass_body">
@@ -98,4 +98,4 @@ include '../signuphead.php';
 </div>
 
 <?php
-include '../foot.php';
+include '../../foot.php';

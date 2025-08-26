@@ -236,7 +236,7 @@ function auth(...$roles) {
         }
     }
     
-    redirect('/page/login.php');
+    redirect('/page/user/login.php');
 }
 
 

@@ -1,5 +1,5 @@
 <?php
-require '../base.php';
+require '../../base.php';
 
 auth();
 if(is_get()){
@@ -15,7 +15,7 @@ if(is_get()){
 }
 
 
-include '../head.php';
+include '../../head.php';
 ?>
 
 
@@ -55,4 +55,4 @@ include '../head.php';
 
 
 <?php
-include '../foot.php';
+include '../../foot.php';

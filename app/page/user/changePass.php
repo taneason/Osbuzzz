@@ -1,5 +1,5 @@
 <?php
-require '../base.php';
+require '../../base.php';
 auth();
 
 $error_class_password='';
@@ -74,7 +74,7 @@ if (is_post()) {
 }
 
 $_title = 'Change Password';
-include '../signuphead.php';
+include '../../signuphead.php';
 ?>
       
 <div class="pass_body">
@@ -111,4 +111,4 @@ include '../signuphead.php';
 </div>
 
 <?php
-include '../foot.php';
+include '../../foot.php';

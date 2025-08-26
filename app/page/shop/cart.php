@@ -1,7 +1,7 @@
 <?php
-require '../base.php';
+require '../../base.php';
 
-include '../head.php';
+include '../../head.php';
 ?>
       
 <main>    
@@ -12,5 +12,6 @@ include '../head.php';
 <button data-get>Reload</button>
 <span data-get="https://www.tarc.edu.my">TAR UMT</span>
 </main>
+
 <?php
-include '../foot.php';
+include '../../foot.php';

@@ -1,16 +1,10 @@
 <?php
-require '../base.php';
+require '../../base.php';
 
-include '../head.php';
+include '../../head.php';
 ?>
       
 <main>    
-    <button data-get="/">Index</button>
-    <button data-get="men.php">Men</button>
-    <button data-get="women.php">Women</button>
-    <button data-get="kids.php">kids</button>
-    <button data-get>Reload</button>
-    <span data-get="https://www.tarc.edu.my">TAR UMT</span>
 
     <div class="products-grid">
         <?php
@@ -31,7 +25,7 @@ include '../head.php';
                 <span class="brand"><?= htmlspecialchars($product->brand) ?></span>
                 <h3><?= htmlspecialchars($product->product_name) ?></h3>
                 <div class="price">RM <?= number_format($product->price, 2) ?></div>
-                <button class="shop">Shop</button>
+                <button class="shop" data-get="product_detail.php?id=<?= $product->product_id ?>">Shop</button>
             </div>
         </div>
         <?php endforeach; ?>
@@ -39,4 +33,4 @@ include '../head.php';
 </main>
 <?php
 
-include '../foot.php';
+include '../../foot.php';

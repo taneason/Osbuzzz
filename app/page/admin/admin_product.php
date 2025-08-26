@@ -32,10 +32,12 @@ $stm->execute($params);
 $totalProducts = $stm->fetchColumn();
 $totalPages = ceil($totalProducts / $limit);
 
-$sql = "SELECT p.product_id, p.product_name, p.brand, p.category, p.price,
-           COALESCE(SUM(v.stock),0) AS total_stock
+$sql = "SELECT p.product_id, p.product_name, p.brand, p.category, p.price, p.photo,
+           COALESCE(SUM(v.stock),0) AS total_stock,
+           pp.photo_filename as main_photo
     FROM product p
     LEFT JOIN product_variants v ON p.product_id = v.product_id
+    LEFT JOIN product_photos pp ON p.product_id = pp.product_id AND pp.is_main_photo = 1
     $where
     GROUP BY p.product_id ORDER BY $sort $order
     LIMIT $limit OFFSET $offset";
@@ -60,6 +62,7 @@ include '../../head.php';
         </p>
         <table class="admin-product-table">
             <tr>
+                <th>Photo</th>
                 <th><?= sort_link('product_id','ID',$sort,$order,$search,$page) ?></th>
                 <th><?= sort_link('product_name','Name',$sort,$order,$search,$page) ?></th>
                 <th><?= sort_link('brand','Brand',$sort,$order,$search,$page) ?></th>
@@ -70,6 +73,22 @@ include '../../head.php';
             </tr>
             <?php foreach ($products as $product): ?>
             <tr>
+                <td style="text-align: center;">
+                    <?php   
+                    $photo_src = null;
+                    if ($product->main_photo) {
+                        $photo_src = $product->main_photo;
+                    } elseif ($product->photo) {
+                        $photo_src = $product->photo;
+                    } else {
+                        $photo_src = 'defaultProduct.png';
+                    }
+                    ?>
+                    <img src="../../images/Products/<?= $photo_src ?>" 
+                         alt="Product photo" 
+                         style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; cursor: pointer;"
+                         onclick="openImageModal('../../images/Products/<?= $photo_src ?>', '<?= htmlspecialchars($product->product_name) ?>')">
+                </td>
                 <td><?= $product->product_id ?></td>
                 <td><?= htmlspecialchars($product->product_name) ?></td>
                 <td><?= htmlspecialchars($product->brand) ?></td>
@@ -115,7 +134,115 @@ include '../../head.php';
         </div>
         <?php endif; ?>
     </section>
+    
+    <!-- Image Modal -->
+    <div id="imageModal" class="image-modal" onclick="closeImageModal()">
+        <span class="image-modal-close" onclick="closeImageModal()">&times;</span>
+        <img class="image-modal-content" id="modalImage">
+        <div class="image-modal-caption" id="modalCaption"></div>
+    </div>
 </main>
+
+<style>
+.image-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+}
+
+.image-modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 80%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.image-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: white;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 1001;
+    transition: color 0.3s;
+}
+
+.image-modal-close:hover {
+    color: #ccc;
+}
+
+.image-modal-caption {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    text-align: center;
+    color: white;
+    padding: 20px 0;
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 16px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+    padding: 10px 20px;
+}
+
+.image-modal-content,
+.image-modal-caption {
+    animation: zoom 0.3s ease;
+}
+
+@keyframes zoom {
+    from { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+    to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+</style>
+
+<script>
+function openImageModal(imageSrc, productName) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    const captionText = document.getElementById('modalCaption');
+    
+    modal.style.display = 'block';
+    modalImg.src = imageSrc;
+    captionText.innerHTML = productName;
+    
+    // 防止body滚动
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    modal.style.display = 'none';
+    
+    // 恢复body滚动
+    document.body.style.overflow = 'auto';
+}
+
+// ESC键关闭模态框
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeImageModal();
+    }
+});
+</script>
 
 <?php
 include '../../foot.php';

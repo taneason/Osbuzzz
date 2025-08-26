@@ -1,5 +1,5 @@
 <?php
-require '../base.php';
+require '../../base.php';
 $error_class_login='';
 $error_class_password='';
 if (is_post()) {
@@ -56,7 +56,7 @@ if (is_post()) {
     }
 }
 $_title = 'Log in';
-include '../signuphead.php';
+include '../../signuphead.php';
 ?>
 
 <div class="login_body">
@@ -85,7 +85,7 @@ include '../signuphead.php';
 
                     <div class="register_link">
                         <p>Don't have an account? 
-                        <a href="/page/signup.php"> Sign up</a>
+                        <a href="/page/user/signup.php"> Sign up</a>
                     </div>
                 </form>
             </div>
@@ -94,4 +94,4 @@ include '../signuphead.php';
 </div>
 
 <?php
-include '../foot.php';
+include '../../foot.php';

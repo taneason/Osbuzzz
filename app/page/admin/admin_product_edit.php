@@ -16,9 +16,14 @@ if (is_get()) {
         temp('error', 'Product not found.');
         redirect('/page/admin/admin_product.php');
     }
+    
+    // Fetch all photos for this product
+    $stm = $_db->prepare("SELECT * FROM product_photos WHERE product_id = ? ORDER BY is_main_photo DESC, display_order ASC");
+    $stm->execute([$product_id]);
+    $product_photos = $stm->fetchAll();
+    
     extract((array)$product);
     $_SESSION['photo'] = $product->photo;
-
 }
 
 
@@ -45,8 +50,7 @@ if (is_post()) {
         $_err['price'] = 'Price must be greater than 0.01';
     }
 
-    // --- Handle photo upload if new photo provided ---
-    
+    // --- Handle main photo upload if new photo provided ---
     if ($f) {
         if (!str_starts_with($f->type, 'image/')) {
             $_err['photo'] = 'Must be image';
@@ -55,23 +59,113 @@ if (is_post()) {
             $_err['photo'] = 'Maximum 1MB';
         }
     }
+    
+    // --- Handle additional photos ---
+    $additional_photos = [];
+    if (isset($_FILES['additional_photos']) && is_array($_FILES['additional_photos']['name'])) {
+        $additional_files = $_FILES['additional_photos'];
+        for ($i = 0; $i < count($additional_files['name']); $i++) {
+            if (!empty($additional_files['name'][$i])) {
+                $file = (object)[
+                    'name' => $additional_files['name'][$i],
+                    'type' => $additional_files['type'][$i],
+                    'tmp_name' => $additional_files['tmp_name'][$i],
+                    'error' => $additional_files['error'][$i],
+                    'size' => $additional_files['size'][$i]
+                ];
+                
+                if (!str_starts_with($file->type, 'image/')) {
+                    $_err['additional_photos'] = 'All additional photos must be images';
+                    break;
+                }
+                else if ($file->size > 1 * 1024 * 1024) {
+                    $_err['additional_photos'] = 'Additional photos maximum 1MB each';
+                    break;
+                }
+                else {
+                    $additional_photos[] = $file;
+                }
+            }
+        }
+    }
+    
+    // --- Handle photo deletion ---
+    $photos_to_delete = req('delete_photos');
+    if ($photos_to_delete && is_array($photos_to_delete)) {
+        // We'll process deletions in the update section
+    }
 
     // --- Update DB ---
     if (!$_err) {
-        if ($f) {
-            // Save new photo
-            unlink("../../images/Products/$photo");
-            $photo = save_photo($f, '../../images/Products');
-
+        try {
+            $_db->beginTransaction();
+            
+            // Update main photo if provided
+            if ($f) {
+                // Delete old main photo file
+                if ($photo && file_exists("../../images/Products/$photo")) {
+                    unlink("../../images/Products/$photo");
+                }
+                $photo = save_photo($f, '../../images/Products');
+                
+                // Update main photo in product_photos table
+                $stm = $_db->prepare('UPDATE product_photos SET photo_filename = ? WHERE product_id = ? AND is_main_photo = 1');
+                $stm->execute([$photo, $product_id]);
+            }
+            
+            // Update product info
+            $stm = $_db->prepare('UPDATE product 
+                                 SET product_name = ?, brand = ?, category = ?, 
+                                     price = ?, description = ?, photo = ?
+                                 WHERE product_id = ?');
+            $stm->execute([$name, $brand, $category, $price, $description, $photo, $product_id]);
+            
+            // Delete selected photos
+            if ($photos_to_delete && is_array($photos_to_delete)) {
+                foreach ($photos_to_delete as $photo_id) {
+                    // Get photo filename before deleting
+                    $stm = $_db->prepare('SELECT photo_filename FROM product_photos WHERE photo_id = ? AND product_id = ? AND is_main_photo = 0');
+                    $stm->execute([$photo_id, $product_id]);
+                    $photo_to_delete = $stm->fetch();
+                    
+                    if ($photo_to_delete) {
+                        // Delete file
+                        if (file_exists("../../images/Products/" . $photo_to_delete->photo_filename)) {
+                            unlink("../../images/Products/" . $photo_to_delete->photo_filename);
+                        }
+                        
+                        // Delete from database
+                        $stm = $_db->prepare('DELETE FROM product_photos WHERE photo_id = ? AND product_id = ? AND is_main_photo = 0');
+                        $stm->execute([$photo_id, $product_id]);
+                    }
+                }
+            }
+            
+            // Add new additional photos
+            if (!empty($additional_photos)) {
+                // Get current max display order
+                $stm = $_db->prepare('SELECT COALESCE(MAX(display_order), 0) as max_order FROM product_photos WHERE product_id = ?');
+                $stm->execute([$product_id]);
+                $max_order = $stm->fetch()->max_order;
+                
+                $order = $max_order + 1;
+                foreach ($additional_photos as $photo_file) {
+                    $photo_filename = save_photo($photo_file, __DIR__ . '/../../images/Products');
+                    $stm = $_db->prepare("INSERT INTO product_photos (product_id, photo_filename, is_main_photo, display_order) 
+                                          VALUES (?, ?, 0, ?)");
+                    $stm->execute([$product_id, $photo_filename, $order]);
+                    $order++;
+                }
+            }
+            
+            $_db->commit();
+            temp('info', 'Product updated successfully.');
+            redirect('/page/admin/admin_product.php');
+            
+        } catch (Exception $e) {
+            $_db->rollBack();
+            $_err['general'] = 'Error updating product: ' . $e->getMessage();
         }
-        $stm = $_db->prepare('UPDATE product 
-                             SET product_name = ?, brand = ?, category = ?, 
-                                 price = ?, description = ?, photo = ?
-                             WHERE product_id = ?');
-        $stm->execute([$name, $brand, $category, $price, $description, $photo, $product_id]);
-
-        temp('info', 'Product updated successfully.');
-        redirect('/page/admin/admin_product.php');
     }
 }
 
@@ -79,8 +173,15 @@ if (is_post()) {
 include '../../head.php';
 ?>
 <main>
+    <?php if (isset($_err['general'])): ?>
+        <div style="color: red; margin-bottom: 20px; padding: 10px; border: 1px solid red; border-radius: 5px;">
+            <?= $_err['general'] ?>
+        </div>
+    <?php endif; ?>
+    
     <h1 class="admin-form-title">Edit Product</h1>
     <form method="post" enctype="multipart/form-data" class="admin-edit-form" novalidate>
+        <input type="hidden" name="id" value="<?= $product_id ?>">
         <fieldset style="border-radius: 10px;">
         <div class="admin-form-grid">
             <!-- Product info -->
@@ -109,20 +210,51 @@ include '../../head.php';
                 <?= html_textarea('description', "placeholder='Description'"); ?>
             </div>
 
-            <!-- Current Photo Preview -->
-            <?php if ($_SESSION['photo']): ?>
+            <!-- Photos Section -->
             <div class="admin-form-row admin-form-row-full">
-                <label><b>Current Photo</b></label>
-                <img src="../../images/Products/<?=$_SESSION['photo']?>" 
-                alt="Current product photo" style="max-width: 200px; max-height: 200px;">
+                <h3 class="admin-form-subtitle">Product Photos</h3>
+            </div>
+
+            <!-- Current Photos Display -->
+            <?php if (!empty($product_photos)): ?>
+            <div class="admin-form-row admin-form-row-full">
+                <label><b>Current Photos</b></label>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 10px;">
+                    <?php foreach ($product_photos as $photo): ?>
+                    <div style="border: 1px solid #ddd; border-radius: 8px; padding: 10px; text-align: center;">
+                        <img src="../../images/Products/<?= $photo->photo_filename ?>" 
+                             alt="Product photo" 
+                             style="max-width: 100%; max-height: 150px; object-fit: cover; border-radius: 4px;">
+                        <div style="margin-top: 8px;">
+                            <?php if ($photo->is_main_photo): ?>
+                                <span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em;">Main Photo</span>
+                            <?php else: ?>
+                                <label style="font-size: 0.9em;">
+                                    <input type="checkbox" name="delete_photos[]" value="<?= $photo->photo_id ?>">
+                                    Delete this photo
+                                </label>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
             </div>
             <?php endif; ?>
 
-            <!-- Photo Upload -->
+            <!-- New Main Photo Upload -->
             <div class="admin-form-row admin-form-row-full admin-form-photo-row">
-                <label><b>New Photo</b> (Leave empty to keep current)</label>
+                <label><b>Update Main Photo</b> (Leave empty to keep current)</label>
                 <?= html_file('photo', 'image/*'); ?>
                 <?= err('photo') ?>
+                <small style="color: #666; font-size: 0.9em;">This will replace the current main photo</small>
+            </div>
+
+            <!-- Additional Photos Upload -->
+            <div class="admin-form-row admin-form-row-full admin-form-photo-row">
+                <label><b>Add More Photos</b></label>
+                <input type="file" name="additional_photos[]" accept="image/*" multiple style="padding: 6px;">
+                <?= err('additional_photos') ?>
+                <small style="color: #666; font-size: 0.9em;">Select multiple photos to add (Ctrl+Click). Maximum 1MB each.</small>
             </div>
 
             <!-- Buttons -->

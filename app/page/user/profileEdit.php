@@ -1,5 +1,5 @@
 <?php
-require '../base.php';
+require '../../base.php';
 auth();
 
 
@@ -72,7 +72,7 @@ if (is_post()) {
         $_user->phone = $phone;
         $_user->photo = $photo;
         temp('info', 'Profile updated!');
-        redirect('/page/profile.php');
+        redirect('/page/user/profile.php');
     }
 } else {
     $name = $user->name;
@@ -84,7 +84,7 @@ if (is_post()) {
 
 
 // include head and add profile-edit.css
-include '../head.php';
+include '../../head.php';
 
 ?>
 <main class="profile-edit-body">
@@ -116,8 +116,8 @@ include '../head.php';
                 <?php if(isset($err['phone'])): ?><span class="err"><?= $err['phone'] ?></span><?php endif; ?>
             </div>
             <button class="edit-btn" type="submit">Save</button>
-            <a href="/page/profile.php" class="edit-cancel">Cancel</a>
+            <a href="/page/user/profile.php" class="edit-cancel">Cancel</a>
         </form>
     </div>
 </main>
-<?php include '../foot.php'; ?>
+<?php include '../../foot.php'; ?>
