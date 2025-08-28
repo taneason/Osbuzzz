@@ -283,7 +283,11 @@ if ($_user) {
                     <img src="/images/logo.png" alt="Osbuzzz Logo">
                 </div>
                 <div class="title">
+                    <?php if ($_user && $_user->role === 'Admin'): ?>
+                    <a href="/page/admin/index.php">Osbuzzz Admin</a>
+                    <?php else: ?>
                     <a href="/">Osbuzzz</a>
+                    <?php endif; ?>
                 </div>
             </div>
             
@@ -306,7 +310,7 @@ if ($_user) {
                             <a href="/page/shop/cart.php">Cart</a>
                             <?php endif; ?>
                             <?php if ($_user->role === 'Admin'): ?>
-                            <a href="/page/admin/admin_product.php">Admin Panel</a>
+                            <a href="/page/admin/index.php">Admin Dashboard</a>
                             <?php endif; ?>
                             <a href="/page/user/logout.php" data-confirm="Are you sure you want to logout?">Logout</a>
                         </div>
@@ -334,15 +338,24 @@ if ($_user) {
 
     <nav>
         <?php if ($_user && $_user->role === 'Admin'): ?>
-            <a href="/page/admin/admin_user.php">User Management</a>
-            <a href="/page/admin/admin_product.php">Product Management</a>
+            <a href="/page/admin/index.php">Dashboard</a>
+            <a href="/page/admin/admin_user.php">Manage Users</a>
+            <a href="/page/admin/admin_product.php">Manage Products</a>
+            <a href="/page/admin/admin_category.php">Manage Categories</a>
         <?php else: ?>
         <a href="/">Home</a>
         <a href="/page/shop/sales.php">Sales</a>
-        <a href="/page/categories/running.php">Running</a>
-        <a href="/page/categories/casual.php">Casual</a>
-        <a href="/page/categories/formal.php">Formal</a>
-        <a href="/page/categories/basketball.php">Basketball</a>
-        <a href="/page/categories/other.php">Other</a>
+        <div class="nav-dropdown">
+            <a href="#" class="nav-dropbtn">Categories ▼</a>
+            <div class="nav-dropdown-content">
+                <?php
+                // Get all active categories for navigation
+                $nav_categories = $_db->query('SELECT category_id, category_name FROM category ORDER BY category_name ASC')->fetchAll();
+                foreach ($nav_categories as $nav_cat):
+                ?>
+                <a href="/page/categories/category.php?id=<?= $nav_cat->category_id ?>"><?= htmlspecialchars($nav_cat->category_name) ?></a>
+                <?php endforeach; ?>
+            </div>
+        </div>
         <?php endif; ?>
     </nav>

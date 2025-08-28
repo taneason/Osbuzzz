@@ -1,0 +1,20 @@
+<svg width="1920" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="formalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#434343;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#000000;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="400" fill="url(#formalGrad)"/>
+  <text x="960" y="200" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="white">FORMAL ELEGANCE</text>
+  <text x="960" y="240" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" fill="rgba(255,255,255,0.9)">Business & Special Occasions</text>
+  
+  <!-- Formal shoe silhouette -->
+  <g transform="translate(1350, 150)">
+    <path d="M0,70 Q30,50 80,55 Q130,60 180,65 Q170,85 120,88 Q70,85 20,82 Q5,78 0,75 Z" fill="rgba(255,255,255,0.3)"/>
+    <path d="M20,75 Q50,70 100,72 Q150,74 170,76 Q150,82 100,83 Q50,82 20,80 Z" fill="rgba(255,255,255,0.2)"/>
+    <circle cx="40" cy="77" r="3" fill="rgba(255,255,255,0.4)"/>
+    <circle cx="55" cy="78" r="3" fill="rgba(255,255,255,0.4)"/>
+    <circle cx="70" cy="79" r="3" fill="rgba(255,255,255,0.4)"/>
+  </g>
+</svg>

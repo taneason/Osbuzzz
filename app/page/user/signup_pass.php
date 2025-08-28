@@ -52,9 +52,9 @@ if (is_post()) {
 
     if (!$_err){
         $stm = $_db->prepare('INSERT INTO user
-                              (email, password,username)
-                              VALUES(?, SHA1(?), ?)');
-        $stm->execute([$email, $password , $username]);
+                              (email, password, username, name, address, phone, photo, created_at)
+                              VALUES(?, SHA1(?), ?, "", "", "", "", NOW())');
+        $stm->execute([$email, $password, $username]);
         temp('info', 'Register Successful');
         redirect('login.php');
         

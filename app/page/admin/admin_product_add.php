@@ -5,15 +5,18 @@ auth('Admin');
 if (is_post() && isset($_POST['add_product'])) {
     $name = req('product_name');
     $brand = req('brand');
-    $category = req('category');
+    $category_id = req('category');
     $price = req('price');
     $description = req('description');
+    $status = req('status');
     $photo = null;
 
     // --- Validation ---
     if ($name == '') $_err['product_name'] = 'Product name is required';
     if ($brand == '') $_err['brand'] = 'Brand is required';
-    if ($category == '') $_err['category'] = 'Category is required';
+    if ($category_id == '') $_err['category'] = 'Category is required';
+    if ($status == '') $_err['status'] = 'Status is required';
+    else if (!in_array($status, ['active', 'inactive'])) $_err['status'] = 'Invalid status';
     if ($price == '') {
         $_err['price'] = 'Price is required';
     } else if(!is_money($price)) {
@@ -79,9 +82,9 @@ if (is_post() && isset($_POST['add_product'])) {
             $main_photo_filename = save_photo($main_photo, __DIR__ . '/../../images/Products');
 
             // 1. Insert into product
-            $stm = $_db->prepare("INSERT INTO product (product_name, brand, category, price, description, photo) 
-                                  VALUES (?, ?, ?, ?, ?, ?)");
-            $stm->execute([$name, $brand, $category, $price, $description, $main_photo_filename]);
+            $stm = $_db->prepare("INSERT INTO product (product_name, brand, category_id, price, description, photo, status) 
+                                  VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stm->execute([$name, $brand, $category_id, $price, $description, $main_photo_filename, $status]);
             
             $product_id = $_db->lastInsertId();
             
@@ -144,6 +147,15 @@ include '../../head.php';
                 <label><b>Price</b></label>
                 <input type="number" name="price" placeholder="Price" step="0.01" min="0.01" value="<?= htmlspecialchars($_POST['price'] ?? '') ?>" />
                 <?= err('price') ?>
+            </div>
+            <div class="admin-form-row">
+                <label><b>Status</b></label>
+                <select name="status" class="admin-form-select">
+                    <option value="">-- Select Status --</option>
+                    <option value="active" <?= ($_POST['status'] ?? '') === 'active' ? 'selected' : '' ?>>Active (Visible to users)</option>
+                    <option value="inactive" <?= ($_POST['status'] ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive (Hidden from users)</option>
+                </select>
+                <?= err('status') ?>
             </div>
             <div class="admin-form-row admin-form-row-full">
                 <label><b>Description</b></label>

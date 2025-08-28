@@ -72,10 +72,11 @@ function get_file($key) {
 }
 
 //Sorting Helpers
-function usort_link($col, $label, $usort, $uorder, $search = '') {
+function usort_link($col, $label, $usort, $uorder, $search = '', $page = 1) {
     $nextOrder = ($usort === $col && $uorder === 'asc') ? 'desc' : 'asc';
     $searchParam = $search !== '' ? '&search=' . urlencode($search) : '';
-    return "<a href='?usort=$col&uorder=$nextOrder$searchParam#users'>$label" . ($usort === $col ? ($uorder === 'asc' ? ' ▲' : ' ▼') : '') . "</a>";
+    $pageParam = $page > 1 ? '&page=' . $page : '';
+    return "<a href='?usort=$col&uorder=$nextOrder$searchParam$pageParam#users'>$label" . ($usort === $col ? ($uorder === 'asc' ? ' ▲' : ' ▼') : '') . "</a>";
 }
 // Helper for sort links that preserves search
 function sort_link($col, $label, $curSort, $curOrder, $search = '') {
@@ -211,8 +212,18 @@ $_user = $_SESSION['user'] ?? null;
 
 
 // Login user
-function login($user, $url = '/') {
+function login($user, $url = null) {
     $_SESSION['user'] = $user;
+    
+    // If no specific URL provided, redirect based on user role
+    if ($url === null) {
+        if ($user->role === 'Admin') {
+            $url = '/page/admin/index.php';
+        } else {
+            $url = '/';
+        }
+    }
+    
     redirect($url);
 }
 
@@ -267,13 +278,19 @@ function is_exists($value, $table, $field) {
     return $stm->fetchColumn() > 0;
 }
 
-$categories = [
-        'Running' => 'Running Shoes',
-        'Basketball' => 'Basketball Shoes',
-        'Casual' => 'Casual Shoes',
-        'Formal' => 'Formal Shoes',
-        'Other' => 'Other'
-    ];
+
+function get_categories_for_select() {
+    global $_db;
+    $stm = $_db->prepare('SELECT category_id, category_name FROM category ORDER BY category_name');
+    $stm->execute();
+    $result = [];
+    foreach ($stm->fetchAll() as $cat) {
+        $result[$cat->category_id] = $cat->category_name;
+    }
+    return $result;
+}
+
+$categories = get_categories_for_select();
 
 
 // Shoe Sizes
@@ -526,4 +543,34 @@ function cart_get_items($user_id = null) {
     $stm->execute([$user_id]);
     
     return $stm->fetchAll();
+}
+
+// Get all categories
+function get_all_categories() {
+    global $_db;
+    
+    $stm = $_db->prepare('SELECT * FROM category ORDER BY category_name');
+    $stm->execute();
+    
+    return $stm->fetchAll();
+}
+
+// Get category by ID
+function get_category_by_id($category_id) {
+    global $_db;
+    
+    $stm = $_db->prepare('SELECT * FROM category WHERE category_id = ?');
+    $stm->execute([$category_id]);
+    
+    return $stm->fetch();
+}
+
+// Get category by slug
+function get_category_by_slug($slug) {
+    global $_db;
+    
+    $stm = $_db->prepare('SELECT * FROM category WHERE category_slug = ?');
+    $stm->execute([$slug]);
+    
+    return $stm->fetch();
 }

@@ -7,7 +7,7 @@ if (is_get()) {
     $product_id = req('id');
 
     // Fetch existing product data
-    $stm = $_db->prepare("SELECT * FROM product WHERE product_id = ?");
+    $stm = $_db->prepare("SELECT p.*, c.category_name FROM product p LEFT JOIN category c ON p.category_id = c.category_id WHERE p.product_id = ?");
     $stm->execute([$product_id]);
     $product = $stm->fetch();
 
@@ -24,6 +24,16 @@ if (is_get()) {
     
     extract((array)$product);
     $_SESSION['photo'] = $product->photo;
+    
+    // Set form field values for proper display (only if not POST request)
+    if (!is_post()) {
+        $product_name = $product->product_name;
+        $brand = $product->brand;
+        $category = $product->category_id; // Map category_id to category field name
+        $price = $product->price;
+        $description = $product->description;
+        $status = $product->status;
+    }
 }
 
 
@@ -32,16 +42,19 @@ if (is_post()) {
     $product_id = req('id');
     $name = req('product_name');
     $brand = req('brand');
-    $category = req('category');
+    $category_id = req('category');
     $price = req('price');
     $description = req('description');
+    $status = req('status');
     $f = get_file('photo');
     $photo = $_SESSION['photo']; // Keep existing photo by default
 
     // --- Validation ---
     if ($name == '') $_err['product_name'] = 'Product name is required';
     if ($brand == '') $_err['brand'] = 'Brand is required';
-    if ($category == '') $_err['category'] = 'Category is required';
+    if ($category_id == '') $_err['category'] = 'Category is required';
+    if ($status == '') $_err['status'] = 'Status is required';
+    else if (!in_array($status, ['active', 'inactive'])) $_err['status'] = 'Invalid status';
     if ($price == '') {
         $_err['price'] = 'Price is required';
     } else if(!is_money($price)) {
@@ -115,10 +128,10 @@ if (is_post()) {
             
             // Update product info
             $stm = $_db->prepare('UPDATE product 
-                                 SET product_name = ?, brand = ?, category = ?, 
-                                     price = ?, description = ?, photo = ?
+                                 SET product_name = ?, brand = ?, category_id = ?, 
+                                     price = ?, description = ?, photo = ?, status = ?
                                  WHERE product_id = ?');
-            $stm->execute([$name, $brand, $category, $price, $description, $photo, $product_id]);
+            $stm->execute([$name, $brand, $category_id, $price, $description, $photo, $status, $product_id]);
             
             // Delete selected photos
             if ($photos_to_delete && is_array($photos_to_delete)) {
@@ -169,6 +182,12 @@ if (is_post()) {
     }
 }
 
+// Get all categories for the select dropdown
+$stm = $_db->query('SELECT category_id, category_name FROM category ORDER BY category_name');
+$categories = [];
+while ($row = $stm->fetch()) {
+    $categories[$row->category_id] = $row->category_name;
+}
 
 include '../../head.php';
 ?>
@@ -204,6 +223,14 @@ include '../../head.php';
                 <label><b>Price</b></label>
                 <?= html_text('price', "placeholder='Price' step='0.01' min='0.01'"); ?>
                 <?= err('price') ?>
+            </div>
+            <div class="admin-form-row">
+                <label><b>Status</b></label>
+                <?= html_select('status', [
+                    'active' => 'Active (Visible to users)',
+                    'inactive' => 'Inactive (Hidden from users)'
+                ], '-- Select Status --', "class='admin-form-select'"); ?>
+                <?= err('status') ?>
             </div>
             <div class="admin-form-row admin-form-row-full">
                 <label><b>Description</b></label>

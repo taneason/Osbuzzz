@@ -5,7 +5,7 @@ auth('Admin');
 // Product table sorting
 $sort = $_GET['sort'] ?? 'product_id';
 $order = $_GET['order'] ?? 'asc';
-$allowed = ['product_id','product_name','brand','price','stock','total_stock','category'];
+$allowed = ['product_id','product_name','brand','price','stock','total_stock','category','status'];
 if (!in_array($sort, $allowed)) $sort = 'product_id';
 $order = strtolower($order) === 'desc' ? 'desc' : 'asc';
 
@@ -14,7 +14,7 @@ $search = trim($_GET['search'] ?? '');
 $where = '';
 $params = [];
 if ($search !== '') {
-    $where = "WHERE p.product_name LIKE ? OR p.brand LIKE ? OR p.category LIKE ?";
+    $where = "WHERE p.product_name LIKE ? OR p.brand LIKE ? OR c.category_name LIKE ?";
     $params[] = "%$search%";
     $params[] = "%$search%";
     $params[] = "%$search%";
@@ -26,20 +26,32 @@ $limit = 10; // Products per page
 $offset = ($page - 1) * $limit;
 
 // Get total count for pagination
-$countSql = "SELECT COUNT(DISTINCT p.product_id) FROM product p LEFT JOIN product_variants v ON p.product_id = v.product_id $where";
+$countSql = "SELECT COUNT(DISTINCT p.product_id) FROM product p LEFT JOIN product_variants v ON p.product_id = v.product_id LEFT JOIN category c ON p.category_id = c.category_id $where";
 $stm = $_db->prepare($countSql);
 $stm->execute($params);
 $totalProducts = $stm->fetchColumn();
 $totalPages = ceil($totalProducts / $limit);
 
-$sql = "SELECT p.product_id, p.product_name, p.brand, p.category, p.price, p.photo,
+// Build ORDER BY clause with proper field mapping
+$orderByField = $sort;
+if ($sort === 'category') {
+    $orderByField = 'c.category_name';
+} elseif ($sort === 'status') {
+    $orderByField = 'p.status';
+} elseif (in_array($sort, ['product_id', 'product_name', 'brand', 'price'])) {
+    $orderByField = 'p.' . $sort;
+}
+
+$sql = "SELECT p.product_id, p.product_name, p.brand, p.price, p.photo, p.status,
+           c.category_name as category,
            COALESCE(SUM(v.stock),0) AS total_stock,
            pp.photo_filename as main_photo
     FROM product p
     LEFT JOIN product_variants v ON p.product_id = v.product_id
     LEFT JOIN product_photos pp ON p.product_id = pp.product_id AND pp.is_main_photo = 1
+    LEFT JOIN category c ON p.category_id = c.category_id
     $where
-    GROUP BY p.product_id ORDER BY $sort $order
+    GROUP BY p.product_id ORDER BY $orderByField $order
     LIMIT $limit OFFSET $offset";
 $stm = $_db->prepare($sql);
 $stm->execute($params);
@@ -67,6 +79,7 @@ include '../../head.php';
                 <th><?= sort_link('product_name','Name',$sort,$order,$search,$page) ?></th>
                 <th><?= sort_link('brand','Brand',$sort,$order,$search,$page) ?></th>
                 <th><?= sort_link('category','Category',$sort,$order,$search,$page) ?></th>
+                <th><?= sort_link('status','Status',$sort,$order,$search,$page) ?></th>
                 <th><?= sort_link('price','Price',$sort,$order,$search,$page) ?></th>
                 <th><?= sort_link('total_stock','Total Stock',$sort,$order,$search,$page) ?></th>
                 <th>Action</th>
@@ -93,6 +106,13 @@ include '../../head.php';
                 <td><?= htmlspecialchars($product->product_name) ?></td>
                 <td><?= htmlspecialchars($product->brand) ?></td>
                 <td><?= htmlspecialchars($product->category) ?></td>
+                <td>
+                    <span class="status-badge status-<?= $product->status ?>" 
+                          style="padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; 
+                                 <?= $product->status === 'active' ? 'background: #d4edda; color: #155724; border: 1px solid #c3e6cb;' : 'background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;' ?>">
+                        <?= ucfirst($product->status) ?>
+                    </span>
+                </td>
                 <td><?= number_format($product->price,2) ?></td>
                 <td><?= $product->total_stock ?></td>
                 <td style="align-items:center;">

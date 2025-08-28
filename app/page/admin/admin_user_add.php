@@ -32,10 +32,9 @@ if (is_post()) {
 
     // --- Insert into DB ---
     if (!$_err) {
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        $stm = $_db->prepare("INSERT INTO user (username, email, name, password, role) 
-                              VALUES (?, ?, ?, ?, 'Admin')");
-        $stm->execute([$username, $email, $name, $hashed_password]);
+        $stm = $_db->prepare("INSERT INTO user (username, email, name, password, address, phone, photo, role, created_at) 
+                              VALUES (?, ?, ?, SHA1(?), '', '', '', 'Admin', NOW())");
+        $stm->execute([$username, $email, $name, $password]);
         
         temp('info', 'Admin user created successfully.');
         redirect('/page/admin/admin_user.php');

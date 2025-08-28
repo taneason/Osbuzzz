@@ -5,7 +5,7 @@ auth('Admin');
 // User table sorting
 $usort = $_GET['usort'] ?? 'id';
 $uorder = $_GET['uorder'] ?? 'asc';
-$uallowed = ['id','username','email','name','role'];
+$uallowed = ['id','username','email','name','role','created_at'];
 if (!in_array($usort, $uallowed)) $usort = 'id';
 $uorder = strtolower($uorder) === 'desc' ? 'desc' : 'asc';
 
@@ -65,6 +65,7 @@ include '../../head.php';
                 <th><?= usort_link('email','Email',$usort,$uorder,$search,$page) ?></th>
                 <th><?= usort_link('name','Name',$usort,$uorder,$search,$page) ?></th>
                 <th><?= usort_link('role','Role',$usort,$uorder,$search,$page) ?></th>
+                <th><?= usort_link('created_at','Registration Date',$usort,$uorder,$search,$page) ?></th>
                 <th>Action</th>
             </tr>
             <?php foreach ($users as $user): ?>
@@ -74,6 +75,7 @@ include '../../head.php';
                 <td><?= htmlspecialchars($user->email) ?></td>
                 <td><?= htmlspecialchars($user->name) ?></td>
                 <td><?= htmlspecialchars($user->role) ?></td>
+                <td><?= date('Y-m-d H:i', strtotime($user->created_at)) ?></td>
                 <td style="align-items:center;">
                     <?php if($user->id !== $_user->id): ?>
                         <button data-confirm="Are you sure you want to delete this user?" data-post="admin_user_delete.php?id=<?= $user->id ?>">Delete</button>
