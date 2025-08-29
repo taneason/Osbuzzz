@@ -806,7 +806,7 @@ function send_reset_email($to_email, $user_name, $reset_link) {
                     <p>If you didn't request this password reset, please ignore this email. Your password will remain secure and unchanged.</p>
                     <p style='margin-top: 30px;'>
                         Best regards,<br>
-                        <span style='color: #007cba; font-weight: 500;'>🏃‍♂️ The Osbuzzz Team</span>
+                        <span style='color: #007cba; font-weight: 500;'>The Osbuzzz Team</span>
                     </p>
                 </div>
                 <div class='footer'>
