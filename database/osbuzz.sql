@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 28, 2025 at 09:09 PM
+-- Generation Time: Aug 29, 2025 at 07:34 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -67,14 +67,36 @@ CREATE TABLE `category` (
 
 INSERT INTO `category` (`category_id`, `category_name`, `category_slug`, `description`, `banner_image`, `created_at`) VALUES
 (1, 'Running', 'running', 'Professional running shoes for athletes and fitness enthusiasts', 'running-banner.svg', '2025-08-28 16:05:36'),
-(2, 'Casual', 'casual', 'Comfortable casual shoes for everyday wear', 'casual-banner.svg', '2025-08-28 16:05:36'),
+(2, 'Casual', 'casual', 'Comfortable casual shoes for everyday wear', '2-1756482111.jpg', '2025-08-28 16:05:36'),
 (3, 'Formal', 'formal', 'Elegant formal shoes for business and special occasions', 'formal-banner.svg', '2025-08-28 16:05:36'),
-(4, 'Basketball', 'basketball', 'High-performance basketball shoes for court sports', '4-1756406581.jpeg', '2025-08-28 16:05:36'),
+(4, 'Basketball', 'basketball', 'High-performance basketball shoes for court sports', '4-1756482725.jpg', '2025-08-28 16:05:36'),
 (5, 'Other', 'other', 'Various other styles and specialty footwear', 'other-banner.svg', '2025-08-28 16:05:36'),
 (6, 'Soccer', 'soccer', 'Professional soccer cleats and football boots', '6-1756406257.jpg', '2025-08-28 16:29:37'),
 (7, 'Lifestyle', 'lifestyle', 'Trendy lifestyle sneakers for fashion-conscious individuals', '7-1756405346.webp', '2025-08-28 16:29:37'),
 (8, 'Kids', 'kids', 'Comfortable and durable shoes designed specifically for children', 'kids-banner.svg', '2025-08-28 16:29:37'),
 (9, 'Sandals', 'sandals', 'Comfortable sandals and slides for casual wear', NULL, '2025-08-28 16:29:37');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `password_resets`
+--
+
+CREATE TABLE `password_resets` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `token` varchar(64) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `password_resets`
+--
+
+INSERT INTO `password_resets` (`id`, `user_id`, `email`, `token`, `expires_at`, `created_at`) VALUES
+(7, 33, 'tanes-wp23@student.tarc.edu.my', 'a80c7735e1db98f5f13f9a7864fdc62a7a20d98d517af91a655792170e14e09c', '2025-08-30 01:36:49', '2025-08-29 17:31:49');
 
 -- --------------------------------------------------------
 
@@ -99,7 +121,7 @@ CREATE TABLE `product` (
 --
 
 INSERT INTO `product` (`product_id`, `product_name`, `brand`, `category_id`, `price`, `description`, `photo`, `created_at`, `status`) VALUES
-(1, 'Way Of Wade 10', 'Lining', 4, 699.00, '', '68addf803e726.jpg', '2025-08-10 15:32:28', 'inactive'),
+(1, 'Way Of Wade 10', 'Lining', 4, 699.00, '', '68addf803e726.jpg', '2025-08-10 15:32:28', 'active'),
 (2, 'Ultraboost', 'Adidas', 3, 459.00, 'Comfortable running shoes', NULL, '2025-08-10 15:32:28', 'inactive'),
 (3, 'Classic Sneakers', 'Nike', 4, 399.00, 'Classic style everyday sneakers', NULL, '2025-08-10 15:32:28', 'active'),
 (4, 'Kids Runner', 'Puma', 5, 199.00, 'Lightweight kids running shoes', NULL, '2025-08-10 15:32:28', 'inactive'),
@@ -201,11 +223,10 @@ CREATE TABLE `product_photos` (
 
 INSERT INTO `product_photos` (`photo_id`, `product_id`, `photo_filename`, `is_main_photo`, `display_order`, `created_at`) VALUES
 (1, 1, '68addf803e726.jpg', 1, 0, '2025-08-26 11:40:04'),
-(6, 1, '68ade249f2e27.jpg', 0, 1, '2025-08-26 16:35:22'),
-(7, 1, '68ade24a068b9.jpg', 0, 2, '2025-08-26 16:35:22'),
-(8, 1, '68ade24a0d1a2.jpg', 0, 3, '2025-08-26 16:35:22'),
-(9, 1, '68ade24a139d3.jpg', 0, 4, '2025-08-26 16:35:22'),
-(10, 105, '68b091bd89963.jpg', 1, 0, '2025-08-28 17:28:29');
+(10, 105, '68b091bd89963.jpg', 1, 0, '2025-08-28 17:28:29'),
+(11, 1, '68b1cbde5f0bd.webp', 0, 1, '2025-08-29 15:48:46'),
+(12, 1, '68b1cbde6a14c.webp', 0, 2, '2025-08-29 15:48:46'),
+(13, 1, '68b1cbde71c9f.webp', 0, 3, '2025-08-29 15:48:46');
 
 -- --------------------------------------------------------
 
@@ -273,7 +294,8 @@ INSERT INTO `user` (`id`, `username`, `email`, `password`, `name`, `address`, `p
 (29, 'testuser1', 'test1@test.com', '356a192b7913b04c54574d18c28d46e6395428ab', 'Test User One', 'Test Address 1', '01-111-1111', '', 'Member', '2025-08-28 16:22:07'),
 (30, 'testuser2', 'test2@test.com', 'da4b9237bacccdf19c0760cab7aec4a8359010b0', 'Test User Two', 'Test Address 2', '01-222-2222', '', 'Member', '2025-08-28 16:22:07'),
 (31, 'customer123', 'customer@shop.com', '77de68daecd823babbb58edb1c8e14d7106e83bb', 'Regular Customer', '999 Customer Boulevard, Shopping District, SD 99999', '01-999-9999', '', 'Member', '2025-08-28 16:22:07'),
-(32, 'jieying', 'jieying@gmail.com', '7c222fb2927d828af22f592134e8932480637c0d', 'JIE YING', '', '', '', 'Admin', '2025-08-28 16:24:04');
+(32, 'jieying', 'jieying@gmail.com', '7c222fb2927d828af22f592134e8932480637c0d', 'JIE YING', '', '', '', 'Admin', '2025-08-28 16:24:04'),
+(33, 'Taneason_1221', 'tanes-wp23@student.tarc.edu.my', '697f6f62764c05183042401e6bc74c6704a3da7d', '', '', '', '', 'Member', '2025-08-29 16:32:17');
 
 --
 -- Indexes for dumped tables
@@ -294,6 +316,17 @@ ALTER TABLE `cart`
 ALTER TABLE `category`
   ADD PRIMARY KEY (`category_id`),
   ADD UNIQUE KEY `category_slug` (`category_slug`);
+
+--
+-- Indexes for table `password_resets`
+--
+ALTER TABLE `password_resets`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `token_unique` (`token`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `email` (`email`),
+  ADD KEY `token` (`token`),
+  ADD KEY `expires_at` (`expires_at`);
 
 --
 -- Indexes for table `product`
@@ -343,6 +376,12 @@ ALTER TABLE `category`
   MODIFY `category_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
+-- AUTO_INCREMENT for table `password_resets`
+--
+ALTER TABLE `password_resets`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
 -- AUTO_INCREMENT for table `product`
 --
 ALTER TABLE `product`
@@ -352,7 +391,7 @@ ALTER TABLE `product`
 -- AUTO_INCREMENT for table `product_photos`
 --
 ALTER TABLE `product_photos`
-  MODIFY `photo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `photo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `product_variants`
@@ -364,7 +403,7 @@ ALTER TABLE `product_variants`
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- Constraints for dumped tables
@@ -376,6 +415,12 @@ ALTER TABLE `user`
 ALTER TABLE `cart`
   ADD CONSTRAINT `fk_cart_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_cart_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `password_resets`
+--
+ALTER TABLE `password_resets`
+  ADD CONSTRAINT `fk_password_resets_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `product`

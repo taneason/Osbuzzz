@@ -342,6 +342,7 @@ if ($_user) {
             <a href="/page/admin/admin_user.php">Manage Users</a>
             <a href="/page/admin/admin_product.php">Manage Products</a>
             <a href="/page/admin/admin_category.php">Manage Categories</a>
+            <a href="/page/admin/password_reset_management.php">Manage Password Resets</a>
         <?php else: ?>
         <a href="/">Home</a>
         <a href="/page/shop/sales.php">Sales</a>

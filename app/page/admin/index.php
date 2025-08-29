@@ -221,6 +221,11 @@ include '../../head.php';
                     <div class="action-title">Add New Product</div>
                     <div class="action-desc">Quickly add a new product</div>
                 </a>
+
+                <a href="password_reset_management.php" class="action-btn">
+                    <div class="action-title">Password Reset Management</div>
+                    <div class="action-desc">View and manage password reset requests</div>
+                </a>
             </div>
         </div>
     </div>

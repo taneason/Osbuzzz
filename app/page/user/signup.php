@@ -26,7 +26,7 @@ if (is_post()) {
 
     if (!$_err){
         $_SESSION['email'] = $email;
-        redirect('/page/signup_pass.php');
+        redirect('/page/user/signup_pass.php');
     }
 }
 $_title = 'Sign Up';

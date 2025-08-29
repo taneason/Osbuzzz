@@ -42,10 +42,10 @@ include '../../head.php';
                 <label>Password:</label>
                 <div>
                     ********
-                    <a href="/page/changePass.php" style="font-size:0.95em;margin-left:10px;color:#3793af;text-decoration:underline;">Change</a>
+                    <a href="/page/user/changePass.php" style="font-size:0.95em;margin-left:10px;color:#3793af;text-decoration:underline;">Change</a>
                 </div>
             </div>
-            <form id="changeProfileForm" action="/page/profileEdit.php" method="get" style="margin-top:24px;">
+            <form id="changeProfileForm" action="/page/user/profileEdit.php" method="get" style="margin-top:24px;">
                 <button type="submit" class="edit-btn">Edit Profile</button>
             </form>
         </div>

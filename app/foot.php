@@ -18,6 +18,7 @@
                     <li><a href="/page/admin/admin_product.php">Manage Products</a></li>
                     <li><a href="/page/admin/admin_user.php">Manage Users</a></li>
                     <li><a href="/page/admin/admin_category.php">Manage Categories</a></li>
+                    <li><a href="/page/admin/password_reset_management.php">Manage Password Resets</a></li>
                     <li><a href="/page/user/profile.php">My Profile</a></li>
                 </ul>
             </div>

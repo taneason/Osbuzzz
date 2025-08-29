@@ -99,6 +99,47 @@ function save_photo($f, $folder, $width = 200, $height = 200) {
     return $photo;
 }
 
+// Save photo with original format support
+function save_photo_with_format($f, $folder, $width = 200, $height = 200) {
+    $file_extension = strtolower(pathinfo($f->name, PATHINFO_EXTENSION));
+    $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    
+    // Default to jpg if extension not allowed
+    if (!in_array($file_extension, $allowed_extensions)) {
+        $file_extension = 'jpg';
+    }
+    
+    $photo = uniqid() . '.' . $file_extension;
+    
+    require_once 'lib/SimpleImage.php';
+    $img = new SimpleImage();
+    
+    // Determine output format based on extension
+    $mime_type = 'image/jpeg'; // default
+    switch ($file_extension) {
+        case 'png':
+            $mime_type = 'image/png';
+            break;
+        case 'gif':
+            $mime_type = 'image/gif';
+            break;
+        case 'webp':
+            $mime_type = 'image/webp';
+            break;
+        case 'jpg':
+        case 'jpeg':
+        default:
+            $mime_type = 'image/jpeg';
+            break;
+    }
+    
+    $img->fromFile($f->tmp_name)
+        ->thumbnail($width, $height)
+        ->toFile("$folder/$photo", $mime_type);
+
+    return $photo;
+}
+
 // Is money?
 function is_money($value) {
     return preg_match('/^\-?\d+(\.\d{1,2})?$/', $value);
@@ -573,4 +614,242 @@ function get_category_by_slug($slug) {
     $stm->execute([$slug]);
     
     return $stm->fetch();
+}
+
+// ============================================================================
+// Email Functions
+// ============================================================================
+
+// Initialize and return mail object
+function get_mail() {
+    require_once 'lib/PHPMailer.php';
+    require_once 'lib/SMTP.php';
+
+    $m = new PHPMailer(true);
+    $m->isSMTP();
+    $m->SMTPAuth = true;
+    $m->Host = 'smtp.gmail.com';
+    $m->Port = 587;
+    $m->Username = 'taneason0912@gmail.com';
+    $m->Password = 'tmdz rbwz tvyt yqbh';
+    $m->CharSet = 'utf-8';
+    $m->setFrom($m->Username, 'Osbuzzz');
+
+    return $m;
+}
+
+// Send password reset email
+function send_reset_email($to_email, $user_name, $reset_link) {
+    try {
+        $mail = get_mail();
+        $mail->addAddress($to_email, $user_name);
+        $mail->isHTML(true);
+        $mail->Subject = 'Reset Your Password - Osbuzzz';
+        
+        // Embed logo image
+        $logo_path = __DIR__ . '/images/logo.png';
+        if (file_exists($logo_path)) {
+            $mail->addEmbeddedImage($logo_path, 'logo', 'logo.png');
+            $logo_src = 'cid:logo';
+        } else {
+            $logo_src = '';
+        }
+        
+        $mail->Body = "
+        <html>
+        <head>
+            <style>
+                body { 
+                    font-family: Arial, sans-serif; 
+                    line-height: 1.6; 
+                    color: #333; 
+                    margin: 0; 
+                    padding: 0;
+                    background: linear-gradient(135deg, #D3F4EF 0%, #007cba 100%);
+                }
+                .container { 
+                    max-width: 600px; 
+                    margin: 20px auto; 
+                    background: white;
+                    border-radius: 15px;
+                    overflow: hidden;
+                    box-shadow: 0 10px 30px rgba(0,124,186,0.2);
+                }
+                .header { 
+                    background: linear-gradient(135deg, #007cba 0%, #005a8a 100%); 
+                    color: white; 
+                    padding: 30px 20px; 
+                    text-align: center;
+                    position: relative;
+                }
+                .header::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 4px;
+                    background: #D3F4EF;
+                }
+                .header h1 {
+                    margin: 0;
+                    font-size: 28px;
+                    font-weight: 300;
+                    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                }
+                .content { 
+                    background: white; 
+                    padding: 40px 30px; 
+                    position: relative;
+                }
+                .content::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 30px;
+                    right: 30px;
+                    height: 3px;
+                    background: linear-gradient(90deg, #D3F4EF 0%, #007cba 50%, #D3F4EF 100%);
+                    border-radius: 2px;
+                }
+                .content h2 {
+                    color: #007cba;
+                    margin-top: 20px;
+                    margin-bottom: 20px;
+                    font-weight: 500;
+                }
+                .button { 
+                    display: inline-block; 
+                    padding: 15px 35px; 
+                    background: linear-gradient(135deg, #007cba 0%, #005a8a 100%); 
+                    color: white !important; 
+                    text-decoration: none; 
+                    border-radius: 25px; 
+                    margin: 25px 0;
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    box-shadow: 0 4px 15px rgba(0,124,186,0.3);
+                    transition: all 0.3s ease;
+                }
+                .button:hover {
+                    color: white !important;
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(0,124,186,0.4);
+                }
+                .link-box {
+                    word-break: break-all; 
+                    background: linear-gradient(135deg, #D3F4EF 0%, #f0f9f7 100%); 
+                    padding: 15px; 
+                    border-radius: 8px;
+                    border-left: 4px solid #007cba;
+                    font-family: monospace;
+                    font-size: 14px;
+                }
+                .warning {
+                    background: linear-gradient(135deg, #fff3cd 0%, #fef7e0 100%);
+                    border-left: 4px solid #007cba;
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                }
+                .footer { 
+                    background: #f8f9fa;
+                    text-align: center; 
+                    padding: 20px; 
+                    color: #666; 
+                    font-size: 12px;
+                    border-top: 1px solid #e9ecef;
+                }
+                .logo-area {
+                    margin-bottom: 10px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 15px;
+                }
+                .email-logo {
+                    width: 40px;
+                    height: 40px;
+                    object-fit: contain;
+                    filter: brightness(0) invert(1);
+                }
+                .brand-accent {
+                    color: #D3F4EF;
+                    font-weight: 600;
+                }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='header'>
+                    <div class='logo-area'>" . 
+                        ($logo_src ? "<img src='" . $logo_src . "' alt='Osbuzzz Logo' class='email-logo'>" : "") . "
+                        <h1><span class='brand-accent'>Osbuzzz</span></h1>
+                    </div>
+                    <p style='margin: 15px 0 0 0; opacity: 0.9; font-size: 16px;'>Password Reset Request</p>
+                </div>
+                <div class='content'>
+                    <h2>👋 Hello " . htmlspecialchars($user_name ?: 'Valued Customer') . "!</h2>
+                    <p>We received a request to reset your password for your <strong>Osbuzzz</strong> account.</p>
+                    <p>Click the button below to securely reset your password:</p>
+                    <p style='text-align: center;'>
+                        <a href='" . htmlspecialchars($reset_link) . "' class='button'>🔐 Reset My Password</a>
+                    </p>
+                    <p>Or copy and paste this secure link into your browser:</p>
+                    <div class='link-box'>
+                        " . htmlspecialchars($reset_link) . "
+                    </div>
+                    <div class='warning'>
+                        <p><strong>⏰ Important:</strong> This secure link will expire in <strong>5 minutes</strong> for your security.</p>
+                    </div>
+                    <p>If you didn't request this password reset, please ignore this email. Your password will remain secure and unchanged.</p>
+                    <p style='margin-top: 30px;'>
+                        Best regards,<br>
+                        <span style='color: #007cba; font-weight: 500;'>🏃‍♂️ The Osbuzzz Team</span>
+                    </p>
+                </div>
+                <div class='footer'>
+                    <p>🔒 This is a secure automated message. Please do not reply to this email.</p>
+                    <p style='margin-top: 10px; color: #007cba;'>Osbuzzz - Your Trusted Sports Footwear Partner</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        ";
+        
+        $mail->AltBody = "Hello " . ($user_name ?: 'Valued Customer') . ",\n\n"
+                       . "We received a request to reset your password for your OSBuzz account.\n\n"
+                       . "Please click on the following link to reset your password:\n"
+                       . $reset_link . "\n\n"
+                       . "This link will expire in 5 minutes.\n\n"
+                       . "If you didn't request this password reset, please ignore this email.\n\n"
+                       . "Best regards,\nThe OSBuzz Team";
+        
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log("Failed to send reset email: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Auto-cleanup expired password reset tokens
+function cleanup_expired_tokens() {
+    global $_db;
+    
+    try {
+        $stm = $_db->prepare('DELETE FROM password_resets WHERE expires_at < NOW()');
+        $stm->execute();
+        $deleted_count = $stm->rowCount();
+        
+        if ($deleted_count > 0) {
+            error_log("Auto-cleanup: Removed $deleted_count expired password reset tokens");
+        }
+        
+        return $deleted_count;
+    } catch (Exception $e) {
+        error_log("Failed to cleanup expired tokens: " . $e->getMessage());
+        return 0;
+    }
 }

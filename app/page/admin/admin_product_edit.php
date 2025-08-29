@@ -71,6 +71,14 @@ if (is_post()) {
         else if ($f->size > 1 * 1024 * 1024) {
             $_err['photo'] = 'Maximum 1MB';
         }
+        else {
+            // Check file extension
+            $file_extension = strtolower(pathinfo($f->name, PATHINFO_EXTENSION));
+            $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            if (!in_array($file_extension, $allowed_extensions)) {
+                $_err['photo'] = 'Must be JPG, PNG, GIF, or WebP format';
+            }
+        }
     }
     
     // --- Handle additional photos ---
@@ -96,7 +104,15 @@ if (is_post()) {
                     break;
                 }
                 else {
-                    $additional_photos[] = $file;
+                    // Check file extension
+                    $file_extension = strtolower(pathinfo($file->name, PATHINFO_EXTENSION));
+                    $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                    if (!in_array($file_extension, $allowed_extensions)) {
+                        $_err['additional_photos'] = 'Additional photos must be JPG, PNG, GIF, or WebP format';
+                        break;
+                    } else {
+                        $additional_photos[] = $file;
+                    }
                 }
             }
         }
@@ -119,7 +135,7 @@ if (is_post()) {
                 if ($photo && file_exists("../../images/Products/$photo")) {
                     unlink("../../images/Products/$photo");
                 }
-                $photo = save_photo($f, '../../images/Products');
+                $photo = save_photo_with_format($f, '../../images/Products');
                 
                 // Update main photo in product_photos table
                 $stm = $_db->prepare('UPDATE product_photos SET photo_filename = ? WHERE product_id = ? AND is_main_photo = 1');
@@ -163,7 +179,7 @@ if (is_post()) {
                 
                 $order = $max_order + 1;
                 foreach ($additional_photos as $photo_file) {
-                    $photo_filename = save_photo($photo_file, __DIR__ . '/../../images/Products');
+                    $photo_filename = save_photo_with_format($photo_file, __DIR__ . '/../../images/Products');
                     $stm = $_db->prepare("INSERT INTO product_photos (product_id, photo_filename, is_main_photo, display_order) 
                                           VALUES (?, ?, 0, ?)");
                     $stm->execute([$product_id, $photo_filename, $order]);
@@ -273,7 +289,7 @@ include '../../head.php';
                 <label><b>Update Main Photo</b> (Leave empty to keep current)</label>
                 <?= html_file('photo', 'image/*'); ?>
                 <?= err('photo') ?>
-                <small style="color: #666; font-size: 0.9em;">This will replace the current main photo</small>
+                <small style="color: #666; font-size: 0.9em;">Supported formats: JPG, PNG, GIF, WebP. This will replace the current main photo</small>
             </div>
 
             <!-- Additional Photos Upload -->
@@ -281,7 +297,7 @@ include '../../head.php';
                 <label><b>Add More Photos</b></label>
                 <input type="file" name="additional_photos[]" accept="image/*" multiple style="padding: 6px;">
                 <?= err('additional_photos') ?>
-                <small style="color: #666; font-size: 0.9em;">Select multiple photos to add (Ctrl+Click). Maximum 1MB each.</small>
+                <small style="color: #666; font-size: 0.9em;">Supported formats: JPG, PNG, GIF, WebP. Select multiple photos to add (Ctrl+Click). Maximum 1MB each.</small>
             </div>
 
             <!-- Buttons -->

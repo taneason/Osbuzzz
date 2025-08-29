@@ -42,7 +42,14 @@ if (is_post() && isset($_POST['add_product'])) {
         $_err['photo'] = 'Main photo maximum 1MB';
     }
     else {
-        $main_photo = $f;
+        // Check file extension
+        $file_extension = strtolower(pathinfo($f->name, PATHINFO_EXTENSION));
+        $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        if (!in_array($file_extension, $allowed_extensions)) {
+            $_err['photo'] = 'Main photo must be JPG, PNG, GIF, or WebP format';
+        } else {
+            $main_photo = $f;
+        }
     }
     
     // Handle additional photos
@@ -67,7 +74,15 @@ if (is_post() && isset($_POST['add_product'])) {
                     break;
                 }
                 else {
-                    $additional_photos[] = $file;
+                    // Check file extension
+                    $file_extension = strtolower(pathinfo($file->name, PATHINFO_EXTENSION));
+                    $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                    if (!in_array($file_extension, $allowed_extensions)) {
+                        $_err['additional_photos'] = 'Additional photos must be JPG, PNG, GIF, or WebP format';
+                        break;
+                    } else {
+                        $additional_photos[] = $file;
+                    }
                 }
             }
         }
@@ -79,7 +94,7 @@ if (is_post() && isset($_POST['add_product'])) {
             $_db->beginTransaction();
             
             // Save main photo
-            $main_photo_filename = save_photo($main_photo, __DIR__ . '/../../images/Products');
+            $main_photo_filename = save_photo_with_format($main_photo, __DIR__ . '/../../images/Products');
 
             // 1. Insert into product
             $stm = $_db->prepare("INSERT INTO product (product_name, brand, category_id, price, description, photo, status) 
@@ -96,7 +111,7 @@ if (is_post() && isset($_POST['add_product'])) {
             // 3. Insert additional photos
             $order = 1;
             foreach ($additional_photos as $photo) {
-                $photo_filename = save_photo($photo, __DIR__ . '/../../images/Products');
+                $photo_filename = save_photo_with_format($photo, __DIR__ . '/../../images/Products');
                 $stm = $_db->prepare("INSERT INTO product_photos (product_id, photo_filename, is_main_photo, display_order) 
                                       VALUES (?, ?, 0, ?)");
                 $stm->execute([$product_id, $photo_filename, $order]);
@@ -172,7 +187,7 @@ include '../../head.php';
                 <label><b>Main Photo *</b></label>
                 <?php html_file('photo', 'image/*'); ?>
                 <?= err('photo') ?>
-                <small style="color: #666; font-size: 0.9em;">This will be the main product photo displayed in lists</small>
+                <small style="color: #666; font-size: 0.9em;">Supported formats: JPG, PNG, GIF, WebP. This will be the main product photo displayed in lists</small>
             </div>
 
             <!-- Additional Photos -->
@@ -180,7 +195,7 @@ include '../../head.php';
                 <label><b>Additional Photos (Optional)</b></label>
                 <input type="file" name="additional_photos[]" accept="image/*" multiple style="padding: 6px;">
                 <?= err('additional_photos') ?>
-                <small style="color: #666; font-size: 0.9em;">You can select multiple photos (Ctrl+Click). Maximum 1MB each.</small>
+                <small style="color: #666; font-size: 0.9em;">Supported formats: JPG, PNG, GIF, WebP. You can select multiple photos (Ctrl+Click). Maximum 1MB each.</small>
             </div>
 
             <!-- Buttons -->
