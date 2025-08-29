@@ -88,9 +88,9 @@ include '../../head.php';
       
 <main>
     <!-- Shop Header -->
-    <div class="shop-header">
-        <h1>All Products</h1>
-        <p>Discover our complete collection of premium footwear</p>
+    <div class="shop-header" style="background-image: url('/images/banners/allproductBanner.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.7); padding: 60px 20px; min-height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <h1 style="margin: 0; font-size: 3rem; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">All Products</h1>
+        <p style="margin: 15px auto 0; font-size: 1.2rem; max-width: 600px; opacity: 0.95; line-height: 1.6; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Discover our complete collection of premium footwear</p>
     </div>
 
     <!-- Shop Container -->

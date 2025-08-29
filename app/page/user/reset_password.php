@@ -81,7 +81,7 @@ include '../../signuphead.php';
                     <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
                         <?= $success_message ?>
                         <br><br>
-                        <a href="/page/user/login.php" class="btn" style="display: inline-block; text-decoration: none;">
+                        <a href="/page/user/login.php" class="btn" style="text-decoration: none; display: block; margin: 0 auto; line-height: 45px;">
                             Go to Login
                         </a>
                     </div>
@@ -89,7 +89,7 @@ include '../../signuphead.php';
                     <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
                         <?= $error_message ?>
                         <br><br>
-                        <a href="/page/user/forgot_password.php" class="btn" style="display: inline-block; text-decoration: none;">
+                        <a href="/page/user/forgot_password.php" class="btn" style="text-decoration: none; display: block; margin: 0 auto; line-height: 45px;">
                             Request New Reset Link
                         </a>
                     </div>
