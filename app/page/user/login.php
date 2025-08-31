@@ -45,8 +45,15 @@ if (is_post()) {
             $u = $stm->fetch();
         }
         if ($u) {
-            temp('info', 'Login successfully');
-            login($u);
+            // Check if user is banned
+            if (isset($u->status) && $u->status === 'banned') {
+                $_err['password'] = 'Your account has been banned.';
+                $error_class_login='class ="error"';
+                $error_class_password='class ="error"';
+            } else {
+                temp('info', 'Login successfully');
+                login($u);
+            }
         }
         else {
             $_err['password'] = 'Not matched';

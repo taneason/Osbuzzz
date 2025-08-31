@@ -37,6 +37,16 @@ $stats['low_stock'] = count($low_stock_products);
 $stm = $_db->query("SELECT COUNT(*) as total FROM product WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
 $stats['recent_products'] = $stm->fetchColumn();
 
+// Get order statistics
+$stm = $_db->query("SELECT COUNT(*) as total FROM orders");
+$stats['total_orders'] = $stm->fetchColumn();
+
+$stm = $_db->query("SELECT COUNT(*) as total FROM orders WHERE order_status = 'processing'");
+$stats['pending_orders'] = $stm->fetchColumn();
+
+$stm = $_db->query("SELECT COALESCE(SUM(grand_total), 0) as total FROM orders WHERE order_status != 'cancelled'");
+$stats['total_sales'] = $stm->fetchColumn();
+
 include '../../head.php';
 ?>
 
@@ -148,7 +158,10 @@ include '../../head.php';
 /* Simple status indicators */
 .stat-card.products { border-left: 4px solid #28a745; }
 .stat-card.users { border-left: 4px solid #007bff; }
-.stat-card.categories { border-left: 4px solid #ffc107; }
+.stat-card.orders { border-left: 4px solid #17a2b8; }
+.stat-card.pending { border-left: 4px solid #ffc107; }
+.stat-card.categories { border-left: 4px solid #6f42c1; }
+.stat-card.sales { border-left: 4px solid #28a745; }
 .stat-card.low-stock { border-left: 4px solid #dc3545; }
 
 @media (max-width: 768px) {
@@ -172,7 +185,7 @@ include '../../head.php';
         <!-- Dashboard Header -->
         <div class="dashboard-header">
             <h1>Admin Dashboard</h1>
-            <p>Welcome back, <?= htmlspecialchars($_user->name ?? $_user->username) ?>! Manage your store from here.</p>
+            <p>Welcome back, <?= htmlspecialchars($_user->username) ?>! Manage your store from here.</p>
         </div>
 
         <!-- Statistics Cards -->
@@ -187,9 +200,24 @@ include '../../head.php';
                 <p class="stat-label">Registered Users</p>
             </div>
 
+            <div class="stat-card orders">
+                <div class="stat-number"><?= $stats['total_orders'] ?></div>
+                <p class="stat-label">Total Orders</p>
+            </div>
+
+            <div class="stat-card pending">
+                <div class="stat-number"><?= $stats['pending_orders'] ?></div>
+                <p class="stat-label">Pending Orders</p>
+            </div>
+
             <div class="stat-card categories">
                 <div class="stat-number"><?= $stats['categories'] ?></div>
                 <p class="stat-label">Categories</p>
+            </div>
+
+            <div class="stat-card sales">
+                <div class="stat-number">RM<?= number_format($stats['total_sales'], 0) ?></div>
+                <p class="stat-label">Total Sales</p>
             </div>
 
             <div class="stat-card low-stock">
@@ -215,6 +243,11 @@ include '../../head.php';
                 <a href="admin_category.php" class="action-btn">
                     <div class="action-title">Manage Categories</div>
                     <div class="action-desc">Edit categories and banners</div>
+                </a>
+
+                <a href="admin_orders.php" class="action-btn">
+                    <div class="action-title">Manage Orders</div>
+                    <div class="action-desc">View and manage customer orders</div>
                 </a>
 
                 <a href="admin_product_add.php" class="action-btn">

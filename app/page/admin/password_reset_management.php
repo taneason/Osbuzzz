@@ -27,7 +27,7 @@ $stm = $_db->query('
     SELECT 
         pr.*,
         u.username,
-        u.name,
+        u.email,
         CASE 
             WHEN pr.expires_at < NOW() THEN "Expired"
             ELSE "Active"
@@ -101,7 +101,7 @@ include '../../head.php';
                         <?php foreach ($recent_requests as $request): ?>
                         <tr style="border-bottom: 1px solid #f1f3f4;">
                             <td style="padding: 12px;">
-                                <strong><?= htmlspecialchars($request->name ?: $request->username) ?></strong>
+                                <strong><?= htmlspecialchars($request->username) ?></strong>
                                 <br>
                                 <small style="color: #666;">@<?= htmlspecialchars($request->username) ?></small>
                             </td>

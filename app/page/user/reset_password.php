@@ -6,6 +6,8 @@ $success_message = '';
 $error_message = '';
 $token_valid = false;
 $user_email = '';
+$error_class_password = '';
+$error_class_confirm_password = '';
 
 // Check if token is provided
 if (!$token) {
@@ -41,14 +43,18 @@ if (is_post() && $token_valid) {
     // Validation
     if ($password == '') {
         $_err['password'] = 'Password is required';
-    } else if (strlen($password) < 6) {
-        $_err['password'] = 'Password must be at least 6 characters';
+        $error_class_password = 'class="error"';
+    } else if (strlen($password) < 8) {
+        $_err['password'] = 'Password must be at least 8 characters';
+        $error_class_password = 'class="error"';
     }
     
     if ($confirm_password == '') {
         $_err['confirm_password'] = 'Please confirm your password';
+        $error_class_confirm_password = 'class="error"';
     } else if ($password != $confirm_password) {
         $_err['confirm_password'] = 'Passwords do not match';
+        $error_class_confirm_password = 'class="error"';
     }
     
     if (!$_err) {
@@ -100,17 +106,17 @@ include '../../signuphead.php';
                         </p>
                         
                         <div class="input_box">
-                            <?= html_password('password', 'maxlength="100" placeholder="New Password"') ?>
+                            <?= html_password('password', 'maxlength="100" placeholder="New Password"'.$error_class_password) ?>
                             <i class='bx bxs-lock-alt'></i>
                             <?= err('password') ?>
                         </div>
                         
                         <div class="input_box">
-                            <?= html_password('confirm_password', 'maxlength="100" placeholder="Confirm New Password"') ?>
+                            <?= html_password('confirm_password', 'maxlength="100" placeholder="Confirm New Password"'.$error_class_confirm_password) ?>
                             <i class='bx bxs-lock-alt'></i>
                             <?= err('confirm_password') ?>
                         </div>
-
+                        <br>
                         <button type="submit" class="btn">Reset Password</button>
 
                         <div class="register_link">

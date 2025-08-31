@@ -308,6 +308,7 @@ if ($_user) {
                             <a href="/page/user/profile.php">Profile</a>
                             <?php if ($_user->role !== 'Admin'): ?>
                             <a href="/page/shop/cart.php">Cart</a>
+                            <a href="/page/user/orders.php">My Orders</a>
                             <?php endif; ?>
                             <?php if ($_user->role === 'Admin'): ?>
                             <a href="/page/admin/index.php">Admin Dashboard</a>
@@ -339,10 +340,11 @@ if ($_user) {
     <nav>
         <?php if ($_user && $_user->role === 'Admin'): ?>
             <a href="/page/admin/index.php">Dashboard</a>
-            <a href="/page/admin/admin_user.php">Manage Users</a>
-            <a href="/page/admin/admin_product.php">Manage Products</a>
-            <a href="/page/admin/admin_category.php">Manage Categories</a>
-            <a href="/page/admin/password_reset_management.php">Manage Password Resets</a>
+            <a href="/page/admin/admin_user.php">Users</a>
+            <a href="/page/admin/admin_product.php">Products</a>
+            <a href="/page/admin/admin_category.php">Categories</a>
+            <a href="/page/admin/admin_orders.php">Orders</a>
+            <a href="/page/admin/password_reset_management.php">Password Resets Requests</a>
         <?php else: ?>
         <a href="/">Home</a>
         <a href="/page/shop/sales.php">Sales</a>

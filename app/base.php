@@ -88,6 +88,7 @@ function sort_link($col, $label, $curSort, $curOrder, $search = '') {
 }
 // Crop, resize and save photo
 function save_photo($f, $folder, $width = 200, $height = 200) {
+    
     $photo = uniqid() . '.jpg';
     
     require_once 'lib/SimpleImage.php';
@@ -278,6 +279,13 @@ function logout($url = '/') {
 function auth(...$roles) {
     global $_user;
     if ($_user) {
+        // Check if user is banned
+        if (isset($_user->status) && $_user->status === 'banned') {
+            logout();
+            temp('error', 'Your account has been banned. Please contact administrator.');
+            redirect('/page/user/login.php');
+        }
+        
         if ($roles) {
             if (in_array($_user->role, $roles)) {
                 return; // OK
@@ -548,6 +556,220 @@ function cart_get_count($user_id = null) {
     return (int)($result->total ?? 0);
 }
 
+// Send order confirmation email (placeholder function)
+function send_order_confirmation_email($order_id) {
+    global $_db;
+    
+    try {
+        // Get order details with user info
+        $stm = $_db->prepare('
+            SELECT o.*, u.username, u.email
+            FROM orders o
+            JOIN user u ON o.user_id = u.id
+            WHERE o.order_id = ?
+        ');
+        $stm->execute([$order_id]);
+        $order = $stm->fetch();
+        
+        if (!$order) {
+            return false;
+        }
+        
+        // Get order items
+        $stm = $_db->prepare('
+            SELECT oi.*, p.photo
+            FROM order_items oi
+            LEFT JOIN product p ON oi.product_id = p.product_id
+            WHERE oi.order_id = ?
+            ORDER BY oi.order_item_id
+        ');
+        $stm->execute([$order_id]);
+        $order_items = $stm->fetchAll();
+        
+        $mail = get_mail();
+        $mail->addAddress($order->email, $order->username);
+        $mail->isHTML(true);
+        $mail->Subject = 'Order Confirmation #' . $order->order_number . ' - Osbuzzz';
+        
+        // Build order items HTML
+        $items_html = '';
+        foreach ($order_items as $item) {
+            $items_html .= "
+                <tr style='border-bottom: 1px solid #eee;'>
+                    <td style='padding: 15px 10px; vertical-align: top;'>
+                        <strong>" . htmlspecialchars($item->product_name) . "</strong><br>
+                        <small style='color: #666;'>Brand: " . htmlspecialchars($item->product_brand) . "</small><br>";
+            
+            if ($item->size) {
+                $items_html .= "<small style='color: #666;'>Size: " . htmlspecialchars($item->size) . "</small><br>";
+            }
+            
+            $items_html .= "<small style='color: #666;'>Price: RM" . number_format($item->price, 2) . "</small>
+                    </td>
+                    <td style='padding: 15px 10px; text-align: center; vertical-align: top;'>
+                        " . $item->quantity . "
+                    </td>
+                    <td style='padding: 15px 10px; text-align: right; vertical-align: top; font-weight: bold;'>
+                        RM" . number_format($item->total_price, 2) . "
+                    </td>
+                </tr>";
+        }
+        
+        $mail->Body = "
+        <html>
+        <head>
+            <style>
+                body { 
+                    font-family: Arial, sans-serif; 
+                    line-height: 1.6; 
+                    color: #333; 
+                    margin: 0; 
+                    padding: 0;
+                    background: linear-gradient(135deg, #D3F4EF 0%, #007cba 100%);
+                }
+                .container { 
+                    max-width: 600px; 
+                    margin: 20px auto; 
+                    background: white;
+                    border-radius: 15px;
+                    overflow: hidden;
+                    box-shadow: 0 10px 30px rgba(0,124,186,0.2);
+                }
+                .header { 
+                    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); 
+                    color: white; 
+                    padding: 30px 20px; 
+                    text-align: center;
+                }
+                .header h1 {
+                    margin: 0;
+                    font-size: 28px;
+                    font-weight: 300;
+                }
+                .content { 
+                    background: white; 
+                    padding: 30px; 
+                }
+                .order-info {
+                    background: #f8f9fa;
+                    padding: 20px;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                }
+                .order-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 20px 0;
+                }
+                .order-table th {
+                    background: #f8f9fa;
+                    padding: 12px 10px;
+                    text-align: left;
+                    border-bottom: 2px solid #007cba;
+                }
+                .order-table th:last-child {
+                    text-align: right;
+                }
+                .total-row {
+                    background: #f8f9fa;
+                    font-weight: bold;
+                }
+                .grand-total {
+                    background: #007cba;
+                    color: white;
+                    font-size: 18px;
+                }
+                .success-icon {
+                    font-size: 48px;
+                    margin-bottom: 15px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='header'>
+                    <div class='success-icon'>✅</div>
+                    <h1>Order Confirmed!</h1>
+                    <p style='margin: 0; opacity: 0.9;'>Thank you for your purchase</p>
+                </div>
+                <div class='content'>
+                    <h2>Hello " . htmlspecialchars($order->username) . "!</h2>
+                    <p>Your order has been successfully placed and is being processed. Here are your order details:</p>
+                    
+                    <div class='order-info'>
+                        <p><strong>Order Number:</strong> " . htmlspecialchars($order->order_number) . "</p>
+                        <p><strong>Order Date:</strong> " . date('F d, Y', strtotime($order->created_at)) . "</p>
+                        <p><strong>Payment Method:</strong> " . ucfirst(str_replace('_', ' ', $order->payment_method)) . "</p>
+                        <p><strong>Order Status:</strong> " . ucfirst($order->order_status) . "</p>
+                    </div>
+                    
+                    <h3>Items Ordered:</h3>
+                    <table class='order-table'>
+                        <tr>
+                            <th>Product</th>
+                            <th style='text-align: center;'>Qty</th>
+                            <th style='text-align: right;'>Total</th>
+                        </tr>
+                        " . $items_html . "
+                        <tr class='total-row'>
+                            <td colspan='2' style='padding: 15px 10px; text-align: right;'>Subtotal:</td>
+                            <td style='padding: 15px 10px; text-align: right;'>RM" . number_format($order->total_amount, 2) . "</td>
+                        </tr>
+                        <tr class='total-row'>
+                            <td colspan='2' style='padding: 15px 10px; text-align: right;'>Shipping:</td>
+                            <td style='padding: 15px 10px; text-align: right;'>RM" . number_format($order->shipping_fee, 2) . "</td>
+                        </tr>
+                        <tr class='total-row'>
+                            <td colspan='2' style='padding: 15px 10px; text-align: right;'>Tax:</td>
+                            <td style='padding: 15px 10px; text-align: right;'>RM" . number_format($order->tax_amount, 2) . "</td>
+                        </tr>
+                        <tr class='grand-total'>
+                            <td colspan='2' style='padding: 15px 10px; text-align: right;'>Grand Total:</td>
+                            <td style='padding: 15px 10px; text-align: right;'>RM" . number_format($order->grand_total, 2) . "</td>
+                        </tr>
+                    </table>
+                    
+                    <h3>Shipping Address:</h3>
+                    <div class='order-info'>
+                        " . nl2br(htmlspecialchars($order->shipping_address)) . "
+                    </div>
+                    
+                    <h3>What's Next?</h3>
+                    <ul>
+                        <li>Your order is being processed and will be shipped within 1-2 business days</li>
+                        <li>You'll receive a tracking number once your order ships</li>
+                        <li>Estimated delivery: 3-5 business days</li>
+                    </ul>
+                    
+                    <p>If you have any questions about your order, please contact our customer support.</p>
+                    
+                    <p style='margin-top: 30px;'>
+                        Best regards,<br>
+                        <span style='color: #007cba; font-weight: 500;'>The Osbuzzz Team</span>
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        ";
+        
+        $mail->AltBody = "Hello " . $order->username . ",\n\n"
+                       . "Your order #" . $order->order_number . " has been confirmed!\n\n"
+                       . "Order Date: " . date('F d, Y', strtotime($order->created_at)) . "\n"
+                       . "Payment Method: " . ucfirst(str_replace('_', ' ', $order->payment_method)) . "\n"
+                       . "Total Amount: RM" . number_format($order->grand_total, 2) . "\n\n"
+                       . "Your order is being processed and will be shipped within 1-2 business days.\n\n"
+                       . "Thank you for shopping with us!\n\n"
+                       . "Best regards,\nThe Osbuzzz Team";
+        
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log("Failed to send order confirmation email: " . $e->getMessage());
+        return false;
+    }
+}
+
 // Clear entire cart
 function cart_clear($user_id = null) {
     global $_db, $_user;
@@ -575,7 +797,7 @@ function cart_get_items($user_id = null) {
     }
     
     $stm = $_db->prepare('
-        SELECT c.*, p.product_name as name, p.price, p.photo 
+        SELECT c.*, p.product_name as name, p.brand, p.price, p.photo 
         FROM cart c 
         JOIN product p ON c.product_id = p.product_id 
         WHERE c.user_id = ? 
@@ -852,4 +1074,48 @@ function cleanup_expired_tokens() {
         error_log("Failed to cleanup expired tokens: " . $e->getMessage());
         return 0;
     }
+}
+
+// ============================================================================
+// Global Variables - Country/State Data
+// ============================================================================
+
+// Malaysia States
+$MALAYSIA_STATES = [
+    'JHR' => 'Johor',
+    'KDH' => 'Kedah',
+    'KTN' => 'Kelantan',
+    'MLK' => 'Melaka',
+    'NSN' => 'Negeri Sembilan',
+    'PHG' => 'Pahang',
+    'PNG' => 'Pulau Pinang',
+    'PRK' => 'Perak',
+    'PLS' => 'Perlis',
+    'SBH' => 'Sabah',
+    'SWK' => 'Sarawak',
+    'SGR' => 'Selangor',
+    'TRG' => 'Terengganu',
+    'WP_KUL' => 'Wilayah Persekutuan Kuala Lumpur',
+    'WP_LBN' => 'Wilayah Persekutuan Labuan',
+    'WP_PJY' => 'Wilayah Persekutuan Putrajaya'
+];
+
+// Function to generate state options for select dropdown
+function generate_state_options($selected_state = '') {
+    global $MALAYSIA_STATES;
+
+    $options = '<option value="">Choose State</option>';
+
+    foreach ($MALAYSIA_STATES as $code => $name) {
+        $selected = ($selected_state == $code) ? 'selected' : '';
+        $options .= "<option value=\"$code\" $selected>$name</option>";
+    }
+    
+    return $options;
+}
+
+// Function to get state name by code
+function get_state_name($state_code) {
+    global $MALAYSIA_STATES;
+    return $MALAYSIA_STATES[$state_code] ?? $state_code;
 }

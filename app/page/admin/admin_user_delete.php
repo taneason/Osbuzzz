@@ -1,33 +1,47 @@
 <?php
-require '../../base.php';
-auth('Admin');
+require_once '../../base.php';
 
-if (is_post()) {
-    $id = req('id');
+// Check if user is admin
+if (!$_user || $_user->role !== 'Admin') {
+    header("Location: ../../user/login.php");
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $id = (int)$_POST['id'];
     
     // Check if trying to delete self
     if ($id == $_user->id) {
         temp('error', 'You cannot delete your own account.');
-        redirect('/page/admin/admin_user.php');
+        header("Location: admin_user.php");
+        exit;
     }
     
-    // Get user info first to delete photo
-    $stm = $_db->prepare('SELECT photo FROM user WHERE id = ?');
-    $stm->execute([$id]);
-    $user = $stm->fetch();
-    
-    // Delete user photo if exists
-    if ($user && $user->photo) {
-        @unlink("../../images/userAvatar/" . $user->photo);
-    }
-    
-    // Delete user
-    $stm = $_db->prepare('DELETE FROM user WHERE id = ?');
-    $stm->execute([$id]);
+    try {
+        // Get user info first to delete photo
+        $stmt = $_db->prepare('SELECT photo FROM user WHERE id = ?');
+        $stmt->execute([$id]);
+        $user = $stmt->fetch();
+        
+        // Delete user photo if exists
+        if ($user && $user->photo) {
+            @unlink(__DIR__ . "/../../images/userAvatar/" . $user->photo);
+        }
+        
+        // Delete user - CASCADE constraints will handle related records
+        $stmt = $_db->prepare('DELETE FROM user WHERE id = ?');
+        $stmt->execute([$id]);
 
-    temp('info', 'User deleted successfully.');
-    redirect('/page/admin/admin_user.php');
+        temp('info', 'User deleted successfully.');
+        
+    } catch (Exception $e) {
+        temp('error', 'Error deleting user: ' . $e->getMessage());
+    }
+    
+    header("Location: admin_user.php");
+    exit;
 } else {
-    redirect('/page/admin/admin_user.php');
+    header("Location: admin_user.php");
+    exit;
 }
 ?>

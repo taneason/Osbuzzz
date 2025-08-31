@@ -5,7 +5,7 @@ auth('Admin');
 // User table sorting
 $usort = $_GET['usort'] ?? 'id';
 $uorder = $_GET['uorder'] ?? 'asc';
-$uallowed = ['id','username','email','name','role','created_at'];
+$uallowed = ['id','username','email','role','created_at'];
 if (!in_array($usort, $uallowed)) $usort = 'id';
 $uorder = strtolower($uorder) === 'desc' ? 'desc' : 'asc';
 
@@ -20,8 +20,7 @@ $search = trim($_GET['search'] ?? '');
 $where = '';
 $params = [];
 if ($search !== '') {
-    $where = "WHERE username LIKE ? OR email LIKE ? OR name LIKE ? OR role LIKE ?";
-    $params[] = "%$search%";
+    $where = "WHERE username LIKE ? OR email LIKE ? OR role LIKE ?";
     $params[] = "%$search%";
     $params[] = "%$search%";
     $params[] = "%$search%";
@@ -43,7 +42,6 @@ $stm = $_db->prepare($sql);
 $stm->execute($params);
 $users = $stm->fetchAll();
 
-
 include '../../head.php';
 ?>
 
@@ -51,7 +49,7 @@ include '../../head.php';
     <section id="users">
         <h1>User Management</h1>
         <form method="get" style="margin-bottom:16px;display:flex;gap:8px;align-items:center;">
-            <input type="search" name="search" placeholder="Search by username, email, name or role" value="<?= htmlspecialchars($search) ?>" class="admin-form-input" style="width:300px;">
+            <input type="search" name="search" placeholder="Search by username, email or role" value="<?= htmlspecialchars($search) ?>" class="admin-form-input" style="width:300px;">
             <button type="submit" class="admin-btn" style="padding: 4px 16px;">Search</button>
             <?php if($search): ?><a href="admin_user.php" class="admin-btn" style="padding: 4px 16px; text-align:center; line-height:normal;">Clear</a><?php endif; ?>
         </form>
@@ -63,7 +61,6 @@ include '../../head.php';
                 <th><?= usort_link('id','ID',$usort,$uorder,$search,$page) ?></th>
                 <th><?= usort_link('username','Username',$usort,$uorder,$search,$page) ?></th>
                 <th><?= usort_link('email','Email',$usort,$uorder,$search,$page) ?></th>
-                <th><?= usort_link('name','Name',$usort,$uorder,$search,$page) ?></th>
                 <th><?= usort_link('role','Role',$usort,$uorder,$search,$page) ?></th>
                 <th><?= usort_link('created_at','Registration Date',$usort,$uorder,$search,$page) ?></th>
                 <th>Action</th>
@@ -73,12 +70,14 @@ include '../../head.php';
                 <td><?= $user->id ?></td>
                 <td><?= htmlspecialchars($user->username) ?></td>
                 <td><?= htmlspecialchars($user->email) ?></td>
-                <td><?= htmlspecialchars($user->name) ?></td>
                 <td><?= htmlspecialchars($user->role) ?></td>
                 <td><?= date('Y-m-d H:i', strtotime($user->created_at)) ?></td>
-                <td style="align-items:center;">
+                <td>
                     <?php if($user->id !== $_user->id): ?>
-                        <button data-confirm="Are you sure you want to delete this user?" data-post="admin_user_delete.php?id=<?= $user->id ?>">Delete</button>
+                        <button onclick="toggleUserStatus(<?= $user->id ?>, '<?= htmlspecialchars($user->username) ?>')"><?= isset($user->status) && $user->status === 'banned' ? 'Activate' : 'Ban' ?></button>
+                        <button onclick="deleteUser(<?= $user->id ?>, '<?= htmlspecialchars($user->username) ?>')">Delete</button>
+                    <?php else: ?>
+                        <span style="color: #999;">Current User</span>
                     <?php endif; ?>
                 </td>
             </tr>
@@ -116,6 +115,64 @@ include '../../head.php';
         <?php endif; ?>
     </section>
 </main>
+
+
+<script>
+// Toggle user status (ban/activate)
+function toggleUserStatus(userId, username) {
+    const confirmMsg = `Are you sure you want to ban/activate ${username}?`;
+    
+    if (confirm(confirmMsg)) {
+        const formData = new FormData();
+        formData.append('user_id', userId);
+        
+        fetch('admin_user_toggle_status.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('User status updated successfully!');
+                location.reload();
+            } else {
+                alert(data.message || 'Failed to update user status');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to update user status');
+        });
+    }
+}
+
+// Delete user
+function deleteUser(userId, username) {
+    const confirmMsg = `Are you sure you want to delete user '${username}'? This action cannot be undone.`;
+    
+    if (confirm(confirmMsg)) {
+        const formData = new FormData();
+        formData.append('id', userId);
+        
+        fetch('admin_user_delete.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('User deleted successfully!');
+                location.reload();
+            } else {
+                alert('Failed to delete user');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to delete user');
+        });
+    }
+}
+</script>
 
 <?php
 include '../../foot.php';

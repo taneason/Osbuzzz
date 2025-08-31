@@ -20,11 +20,8 @@ if (is_post()) {
     else if (strlen($email) > 100) $_err['email'] = 'Email maximum 100 characters';
     else if (!is_unique($email, 'user', 'email')) $_err['email'] = 'Email already exists';
 
-    if ($name == '') $_err['name'] = 'Name is required';
-    else if (strlen($name) > 100) $_err['name'] = 'Name maximum 100 characters';
-
     if ($password == '') $_err['password'] = 'Password is required';
-    else if (strlen($password) < 6) $_err['password'] = 'Password must be at least 6 characters';
+    else if (strlen($password) < 8) $_err['password'] = 'Password must be at least 8 characters';
     else if (strlen($password) > 255) $_err['password'] = 'Password maximum 255 characters';
 
     if ($confirm_password == '') $_err['confirm_password'] = 'Please confirm password';
@@ -32,10 +29,10 @@ if (is_post()) {
 
     // --- Insert into DB ---
     if (!$_err) {
-        $stm = $_db->prepare("INSERT INTO user (username, email, name, password, address, phone, photo, role, created_at) 
-                              VALUES (?, ?, ?, SHA1(?), '', '', '', 'Admin', NOW())");
-        $stm->execute([$username, $email, $name, $password]);
-        
+        $stm = $_db->prepare("INSERT INTO user (username, email, password, photo, role, created_at) 
+                              VALUES (?, ?, SHA1(?), '', 'Admin', NOW())");
+        $stm->execute([$username, $email, $password]);
+
         temp('info', 'Admin user created successfully.');
         redirect('/page/admin/admin_user.php');
     }

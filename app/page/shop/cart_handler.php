@@ -58,6 +58,35 @@ switch ($action) {
         echo json_encode(['count' => $count]);
         break;
         
+    case 'remove_multiple':
+        $cart_ids_json = $_POST['cart_ids'] ?? '';
+        $cart_ids = json_decode($cart_ids_json, true);
+        
+        if (!is_array($cart_ids) || empty($cart_ids)) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'No items selected']);
+            exit;
+        }
+        
+        $removed_count = 0;
+        foreach ($cart_ids as $cart_id) {
+            $result = cart_remove_item($cart_id);
+            if ($result['success']) {
+                $removed_count++;
+            }
+        }
+        
+        if ($removed_count > 0) {
+            temp('success', "$removed_count item(s) removed from cart");
+            $response = ['success' => true, 'message' => "$removed_count item(s) removed from cart"];
+        } else {
+            $response = ['success' => false, 'message' => 'Failed to remove items from cart'];
+        }
+        
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        break;
+        
     case 'clear_cart':
         $result = cart_clear();
         if ($result['success']) {

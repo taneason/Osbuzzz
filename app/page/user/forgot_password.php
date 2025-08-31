@@ -3,6 +3,7 @@ require '../../base.php';
 
 $success_message = '';
 $error_message = '';
+$error_class_email = '';
 
 if (is_post()) {
     $email = req('email');
@@ -10,8 +11,10 @@ if (is_post()) {
     // Validation
     if ($email == '') {
         $_err['email'] = 'Email is required';
+        $error_class_email = 'class="error"';
     } else if (!is_email($email)) {
         $_err['email'] = 'Invalid email format';
+        $error_class_email = 'class="error"';
     } else {
         // Check if email exists in database
         $stm = $_db->prepare('SELECT * FROM user WHERE email = ?');
@@ -20,6 +23,7 @@ if (is_post()) {
         
         if (!$user) {
             $_err['email'] = 'Email not found in our system';
+            $error_class_email = 'class="error"';
         }
     }
     
@@ -66,7 +70,7 @@ if (is_post()) {
         $reset_link = "http://" . $_SERVER['HTTP_HOST'] . "/page/user/reset_password.php?token=" . $reset_token;
         
         // Use name if available, otherwise use username
-        $display_name = !empty($user->name) ? $user->name : $user->username;
+        $display_name = $user->username;
         
         if (send_reset_email($email, $display_name, $reset_link)) {
             $success_message = 'Password reset link has been sent to your email address.';
@@ -104,11 +108,11 @@ include '../../signuphead.php';
                     <?php endif; ?>
                     
                     <div class="input_box">
-                        <?= html_text('email', 'maxlength="100" placeholder="Enter your email address"') ?>
+                        <?= html_text('email', 'maxlength="100" placeholder="Enter your email address"'.$error_class_email) ?>
                         <i class='bx bxs-envelope'></i>
                         <?= err('email') ?>
                     </div>
-
+                    <br>
                     <button type="submit" class="btn">Send Reset Link</button>
 
                     <div class="register_link">

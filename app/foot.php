@@ -15,11 +15,11 @@
                 <h3>Admin Panel</h3>
                 <ul class="list">
                     <li><a href="/page/admin/index.php">Dashboard</a></li>
-                    <li><a href="/page/admin/admin_product.php">Manage Products</a></li>
-                    <li><a href="/page/admin/admin_user.php">Manage Users</a></li>
-                    <li><a href="/page/admin/admin_category.php">Manage Categories</a></li>
-                    <li><a href="/page/admin/password_reset_management.php">Manage Password Resets</a></li>
-                    <li><a href="/page/user/profile.php">My Profile</a></li>
+                    <li><a href="/page/admin/admin_product.php">Products</a></li>
+                    <li><a href="/page/admin/admin_user.php">Users</a></li>
+                    <li><a href="/page/admin/admin_category.php">Categories</a></li>
+                    <li><a href="/page/admin/admin_orders.php">Orders</a></li>
+                    <li><a href="/page/admin/password_reset_management.php">Password Resets Requests</a></li>
                 </ul>
             </div>
             <?php else: ?>
@@ -35,6 +35,9 @@
                     <li><a href="/page/shop/search.php">Search</a></li>
                     <li><a href="/page/user/profile.php">My Profile</a></li>
                     <li><a href="/page/shop/cart.php">My Cart</a></li>
+                    <li><a href="/page/user/orders.php">My Orders</a></li>
+                    <li><a href="/page/user/logout.php">Logout</a></li>
+
                     <?php endif; ?>
                 </ul>
             </div>
