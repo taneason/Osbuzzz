@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 31, 2025 at 03:54 PM
+-- Generation Time: Aug 31, 2025 at 05:57 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -132,9 +132,11 @@ CREATE TABLE `orders` (
 --
 
 INSERT INTO `orders` (`order_id`, `user_id`, `order_number`, `total_amount`, `shipping_fee`, `tax_amount`, `grand_total`, `order_status`, `payment_status`, `payment_method`, `payment_id`, `shipping_address`, `billing_address`, `customer_notes`, `admin_notes`, `created_at`, `updated_at`) VALUES
-(12, 18, 'OSB2025958975', 699.00, 10.00, 41.94, 750.94, 'processing', 'paid', 'paypal', '0UP77077382913636', 'Tan Ea Son\ntaman indah\nmuar, TRG 84000\nPhone: 0177438690', NULL, '', NULL, '2025-08-31 13:20:51', '2025-08-31 13:20:51'),
-(13, 18, 'OSB2025466940', 699.00, 10.00, 41.94, 750.94, 'pending', 'pending', 'cash_on_delivery', NULL, 'Tan Ea Son\ntaman indah\nmuar, TRG 84000\nPhone: 0177438690', NULL, '', NULL, '2025-08-31 13:30:49', '2025-08-31 13:30:49'),
-(14, 18, 'OSB2025399478', 699.00, 10.00, 41.94, 750.94, 'processing', 'paid', 'paypal', '5N5541256C220062P', 'Tan Ea Son\ntaman indah\nmuar, TRG 84000\nPhone: 0177438690', NULL, '', NULL, '2025-08-31 13:44:39', '2025-08-31 13:44:39');
+(12, 18, 'OSB2025958975', 699.00, 10.00, 41.94, 750.94, 'cancelled', 'refunded', 'paypal', '0UP77077382913636', 'Tan Ea Son\ntaman indah\nmuar, TRG 84000\nPhone: 0177438690', NULL, '', NULL, '2025-08-31 13:20:51', '2025-08-31 14:25:52'),
+(13, 18, 'OSB2025466940', 699.00, 10.00, 41.94, 750.94, 'cancelled', '', 'cash_on_delivery', NULL, 'Tan Ea Son\ntaman indah\nmuar, TRG 84000\nPhone: 0177438690', NULL, '', NULL, '2025-08-31 13:30:49', '2025-08-31 14:21:28'),
+(14, 18, 'OSB2025399478', 699.00, 10.00, 41.94, 750.94, 'shipped', 'paid', 'paypal', '5N5541256C220062P', 'Tan Ea Son\ntaman indah\nmuar, TRG 84000\nPhone: 0177438690', NULL, '', NULL, '2025-08-31 13:44:39', '2025-08-31 14:14:16'),
+(15, 18, 'OSB2025897094', 699.00, 10.00, 41.94, 750.94, 'delivered', 'pending', 'cash_on_delivery', NULL, 'Tan Ea Son\ntaman indah\nmuar, TRG 84000\nPhone: 0177438690', NULL, '', NULL, '2025-08-31 13:57:15', '2025-08-31 14:08:37'),
+(16, 18, 'OSB2025645384', 699.00, 10.00, 41.94, 750.94, 'processing', 'paid', 'paypal', '8PS52006BM8445424', 'Tan Ea Son\ntaman indah\nmuar, TRG 84000\nPhone: 0177438690', NULL, '', NULL, '2025-08-31 15:53:42', '2025-08-31 15:53:42');
 
 -- --------------------------------------------------------
 
@@ -162,7 +164,9 @@ CREATE TABLE `order_items` (
 INSERT INTO `order_items` (`order_item_id`, `order_id`, `product_id`, `product_name`, `product_brand`, `size`, `price`, `quantity`, `total_price`, `created_at`) VALUES
 (1, 12, 1, 'Way Of Wade 10', 'Lining', '36', 699.00, 1, 699.00, '2025-08-31 13:20:51'),
 (2, 13, 1, 'Way Of Wade 10', 'Lining', '36', 699.00, 1, 699.00, '2025-08-31 13:30:49'),
-(3, 14, 105, '1', 'Lining', '38', 699.00, 1, 699.00, '2025-08-31 13:44:39');
+(3, 14, 105, '1', 'Lining', '38', 699.00, 1, 699.00, '2025-08-31 13:44:39'),
+(4, 15, 105, '1', 'Lining', '38', 699.00, 1, 699.00, '2025-08-31 13:57:15'),
+(5, 16, 1, 'Way Of Wade 10', 'Lining', '36', 699.00, 1, 699.00, '2025-08-31 15:53:42');
 
 -- --------------------------------------------------------
 
@@ -187,7 +191,14 @@ CREATE TABLE `order_status_history` (
 INSERT INTO `order_status_history` (`history_id`, `order_id`, `old_status`, `new_status`, `changed_by`, `notes`, `created_at`) VALUES
 (1, 12, NULL, 'processing', 18, 'Order created via PayPal payment', '2025-08-31 13:20:51'),
 (2, 13, NULL, 'pending', 18, 'Order created with Cash on Delivery payment', '2025-08-31 13:30:49'),
-(3, 14, NULL, 'processing', 18, 'Order created via PayPal payment', '2025-08-31 13:44:39');
+(3, 14, NULL, 'processing', 18, 'Order created via PayPal payment', '2025-08-31 13:44:39'),
+(4, 15, NULL, 'pending', 18, 'Order created with Cash on Delivery payment', '2025-08-31 13:57:15'),
+(5, 15, 'pending', 'delivered', 13, 'Status updated by admin', '2025-08-31 14:08:37'),
+(6, 14, 'processing', 'shipped', 13, 'Status updated by admin', '2025-08-31 14:14:16'),
+(7, 13, 'pending', 'cancelled', 18, 'Order cancelled by customer', '2025-08-31 14:21:28'),
+(8, 12, 'processing', 'cancelled', 18, 'Order cancelled by customer', '2025-08-31 14:25:52'),
+(9, 15, 'delivered', 'delivered', 13, 'okayyy', '2025-08-31 14:28:28'),
+(10, 16, NULL, 'processing', 18, 'Order created via PayPal payment', '2025-08-31 15:53:42');
 
 -- --------------------------------------------------------
 
@@ -355,10 +366,10 @@ INSERT INTO `product_variants` (`variant_id`, `product_id`, `size`, `stock`) VAL
 (2, 2, '43', 3),
 (3, 2, '42', 7),
 (5, 2, '42', 6),
-(12, 1, '36', 0),
+(12, 1, '36', 1),
 (13, 3, '37', 0),
 (15, 4, '40', 4),
-(599, 105, '38', 1);
+(599, 105, '38', 0);
 
 -- --------------------------------------------------------
 
@@ -373,32 +384,31 @@ CREATE TABLE `user` (
   `password` varchar(100) NOT NULL,
   `photo` varchar(255) NOT NULL,
   `role` enum('Admin','Member') NOT NULL DEFAULT 'Member',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `status` enum('active','banned') DEFAULT 'active'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`id`, `username`, `email`, `password`, `photo`, `role`, `created_at`) VALUES
-(13, 'eason', 'taneason1111@gmail.com', '7c222fb2927d828af22f592134e8932480637c0d', '6898d553e9814.jpg', 'Admin', '2025-08-28 16:22:07'),
-(15, 'Tan1221', 'taneason0000@gmail.com', '7c222fb2927d828af22f592134e8932480637c0d', '687ce54d6c885.jpg', 'Member', '2025-08-28 16:22:07'),
-(18, 'taneason', 'taneason0912@gmail.com', '697f6f62764c05183042401e6bc74c6704a3da7d', '', 'Member', '2025-08-28 16:22:07'),
-(19, 'admin', 'admin@osbuzz.com', '356a192b7913b04c54574d18c28d46e6395428ab', '', 'Admin', '2025-08-28 16:22:07'),
-(20, 'manager', 'manager@osbuzz.com', 'da4b9237bacccdf19c0760cab7aec4a8359010b0', '', 'Admin', '2025-08-28 16:22:07'),
-(21, 'john_doe', 'john.doe@email.com', '77de68daecd823babbb58edb1c8e14d7106e83bb', '', 'Member', '2025-08-28 16:22:07'),
-(22, 'jane_smith', 'jane.smith@email.com', '1b6453892473a467d07372d45eb05abc2031647a', '', 'Member', '2025-08-28 16:22:07'),
-(23, 'mike_wilson', 'mike.wilson@email.com', 'ac3478d69a3c81fa62e60f5c3696165a4e5e6ac4', '', 'Member', '2025-08-28 16:22:07'),
-(24, 'sarah_brown', 'sarah.brown@email.com', 'c1dfd96eea8cc2b62785275bca38ac261256e278', '', 'Member', '2025-08-28 16:22:07'),
-(25, 'david_lee', 'david.lee@email.com', '902ba3cda1883801594b6e1b452790cc53948fda', '', 'Member', '2025-08-28 16:22:07'),
-(26, 'lisa_taylor', 'lisa.taylor@email.com', 'fe5dbbcea5ce7e2988b8c69bcfdfde8904aabc1f', '', 'Member', '2025-08-28 16:22:07'),
-(27, 'alex_johnson', 'alex.johnson@email.com', '0ade7c2cf97f75d009975f4d720d1fa6c19f4897', '', 'Member', '2025-08-28 16:22:07'),
-(28, 'emily_davis', 'emily.davis@email.com', 'b1d5781111d84f7b3fe45a0852e59758cd7a87e5', '', 'Member', '2025-08-28 16:22:07'),
-(29, 'testuser1', 'test1@test.com', '356a192b7913b04c54574d18c28d46e6395428ab', '', 'Member', '2025-08-28 16:22:07'),
-(30, 'testuser2', 'test2@test.com', 'da4b9237bacccdf19c0760cab7aec4a8359010b0', '', 'Member', '2025-08-28 16:22:07'),
-(31, 'customer123', 'customer@shop.com', '77de68daecd823babbb58edb1c8e14d7106e83bb', '', 'Member', '2025-08-28 16:22:07'),
-(32, 'jieying', 'jieying@gmail.com', '7c222fb2927d828af22f592134e8932480637c0d', '', 'Admin', '2025-08-28 16:24:04'),
-(33, 'Taneason_1221', 'tanes-wp23@student.tarc.edu.my', '7c222fb2927d828af22f592134e8932480637c0d', '', 'Member', '2025-08-29 16:32:17');
+INSERT INTO `user` (`id`, `username`, `email`, `password`, `photo`, `role`, `created_at`, `status`) VALUES
+(13, 'eason', 'taneason1111@gmail.com', '7c222fb2927d828af22f592134e8932480637c0d', '6898d553e9814.jpg', 'Admin', '2025-08-28 16:22:07', 'active'),
+(18, 'taneason', 'taneason0912@gmail.com', '697f6f62764c05183042401e6bc74c6704a3da7d', '', 'Member', '2025-08-28 16:22:07', 'active'),
+(19, 'admin', 'admin@osbuzz.com', '356a192b7913b04c54574d18c28d46e6395428ab', '', 'Admin', '2025-08-28 16:22:07', 'active'),
+(20, 'manager', 'manager@osbuzz.com', 'da4b9237bacccdf19c0760cab7aec4a8359010b0', '', 'Admin', '2025-08-28 16:22:07', 'active'),
+(21, 'john_doe', 'john.doe@email.com', '77de68daecd823babbb58edb1c8e14d7106e83bb', '', 'Member', '2025-08-28 16:22:07', 'active'),
+(22, 'jane_smith', 'jane.smith@email.com', '1b6453892473a467d07372d45eb05abc2031647a', '', 'Member', '2025-08-28 16:22:07', 'active'),
+(23, 'mike_wilson', 'mike.wilson@email.com', 'ac3478d69a3c81fa62e60f5c3696165a4e5e6ac4', '', 'Member', '2025-08-28 16:22:07', 'active'),
+(24, 'sarah_brown', 'sarah.brown@email.com', 'c1dfd96eea8cc2b62785275bca38ac261256e278', '', 'Member', '2025-08-28 16:22:07', 'active'),
+(25, 'david_lee', 'david.lee@email.com', '902ba3cda1883801594b6e1b452790cc53948fda', '', 'Member', '2025-08-28 16:22:07', 'active'),
+(26, 'lisa_taylor', 'lisa.taylor@email.com', 'fe5dbbcea5ce7e2988b8c69bcfdfde8904aabc1f', '', 'Member', '2025-08-28 16:22:07', 'active'),
+(27, 'alex_johnson', 'alex.johnson@email.com', '0ade7c2cf97f75d009975f4d720d1fa6c19f4897', '', 'Member', '2025-08-28 16:22:07', 'active'),
+(28, 'emily_davis', 'emily.davis@email.com', 'b1d5781111d84f7b3fe45a0852e59758cd7a87e5', '', 'Member', '2025-08-28 16:22:07', 'active'),
+(29, 'testuser1', 'test1@test.com', '356a192b7913b04c54574d18c28d46e6395428ab', '', 'Member', '2025-08-28 16:22:07', 'active'),
+(30, 'testuser2', 'test2@test.com', 'da4b9237bacccdf19c0760cab7aec4a8359010b0', '', 'Member', '2025-08-28 16:22:07', 'active'),
+(31, 'customer123', 'customer@shop.com', '77de68daecd823babbb58edb1c8e14d7106e83bb', '', 'Member', '2025-08-28 16:22:07', 'active'),
+(32, 'jieying', 'jieying@gmail.com', '7c222fb2927d828af22f592134e8932480637c0d', '', 'Admin', '2025-08-28 16:24:04', 'active');
 
 --
 -- Indexes for dumped tables
@@ -506,7 +516,7 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `category`
@@ -524,19 +534,19 @@ ALTER TABLE `customer_addresses`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `order_status_history`
 --
 ALTER TABLE `order_status_history`
-  MODIFY `history_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `history_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `password_resets`
