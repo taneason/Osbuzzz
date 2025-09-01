@@ -182,42 +182,42 @@ include '../../head.php';
                     <th><?= sort_link('created_at','Date',$sort,$order,$search,$page,$status_filter,$payment_filter) ?></th>
                     <th>Action</th>
                 </tr>
-                <?php foreach ($orders as $order): ?>
+                <?php foreach ($orders as $order_item): ?>
                 <tr>
-                    <td><?= $order->order_id ?></td>
-                    <td><strong><?= $order->order_number ?></strong></td>
+                    <td><?= $order_item->order_id ?></td>
+                    <td><strong><?= $order_item->order_number ?></strong></td>
                     <td>
-                        <?= htmlspecialchars($order->username) ?><br>
-                        <small style="color: #666;"><?= htmlspecialchars($order->email) ?></small>
+                        <?= htmlspecialchars($order_item->username) ?><br>
+                        <small style="color: #666;"><?= htmlspecialchars($order_item->email) ?></small>
                     </td>
                     <td>
-                        <?= $order->item_count ?> items<br>
-                        <small style="color: #666;"><?= $order->total_quantity ?> pieces</small>
+                        <?= $order_item->item_count ?> items<br>
+                        <small style="color: #666;"><?= $order_item->total_quantity ?> pieces</small>
                     </td>
-                    <td><strong>RM<?= number_format($order->grand_total, 2) ?></strong></td>
+                    <td><strong>RM<?= number_format($order_item->grand_total, 2) ?></strong></td>
                     <td>
-                        <?= ucfirst(str_replace('_', ' ', $order->payment_method)) ?><br>
+                        <?= ucfirst(str_replace('_', ' ', $order_item->payment_method)) ?><br>
                         <span style="padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; 
-                              <?= $order->payment_status === 'paid' ? 'background: #d4edda; color: #155724;' : 
-                                  ($order->payment_status === 'pending' ? 'background: #fff3cd; color: #856404;' : 'background: #f8d7da; color: #721c24;') ?>">
-                            <?= ucfirst($order->payment_status) ?>
+                              <?= $order_item->payment_status === 'paid' ? 'background: #d4edda; color: #155724;' : 
+                                  ($order_item->payment_status === 'pending' ? 'background: #fff3cd; color: #856404;' : 'background: #f8d7da; color: #721c24;') ?>">
+                            <?= ucfirst($order_item->payment_status) ?>
                         </span>
                     </td>
                     <td>
                         <span style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; 
-                              <?= $order->order_status === 'delivered' ? 'background: #d4edda; color: #155724;' : 
-                                  ($order->order_status === 'shipped' ? 'background: #d1ecf1; color: #0c5460;' : 
-                                  ($order->order_status === 'processing' ? 'background: #fff3cd; color: #856404;' : 'background: #f8d7da; color: #721c24;')) ?>">
-                            <?= ucfirst($order->order_status) ?>
+                              <?= $order_item->order_status === 'delivered' ? 'background: #d4edda; color: #155724;' : 
+                                  ($order_item->order_status === 'shipped' ? 'background: #d1ecf1; color: #0c5460;' : 
+                                  ($order_item->order_status === 'processing' ? 'background: #fff3cd; color: #856404;' : 'background: #f8d7da; color: #721c24;')) ?>">
+                            <?= ucfirst($order_item->order_status) ?>
                         </span>
                     </td>
                     <td>
-                        <?= date('M d, Y', strtotime($order->created_at)) ?><br>
-                        <small style="color: #666;"><?= date('g:i A', strtotime($order->created_at)) ?></small>
+                        <?= date('M d, Y', strtotime($order_item->created_at)) ?><br>
+                        <small style="color: #666;"><?= date('g:i A', strtotime($order_item->created_at)) ?></small>
                     </td>
                     <td>
-                        <button data-get="admin_order_detail.php?id=<?= $order->order_id ?>">View</button>
-                        <button onclick="updateOrderStatus(<?= $order->order_id ?>, '<?= $order->order_status ?>')">Update</button>
+                        <button data-get="admin_order_detail.php?id=<?= $order_item->order_id ?>">View</button>
+                        <button onclick="updateOrderStatus(<?= $order_item->order_id ?>, '<?= $order_item->order_status ?>')">Update</button>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -230,7 +230,7 @@ include '../../head.php';
                 $searchParam = $search !== '' ? '&search=' . urlencode($search) : '';
                 $statusParam = $status_filter !== '' ? '&status=' . urlencode($status_filter) : '';
                 $paymentParam = $payment_filter !== '' ? '&payment=' . urlencode($payment_filter) : '';
-                $sortParam = "&sort=$sort&order=$order";
+                $sortParam = "&sort=" . urlencode((string)$sort) . "&order=" . urlencode((string)$order);
                 $allParams = $searchParam . $statusParam . $paymentParam . $sortParam;
                 ?>
                 
@@ -241,7 +241,7 @@ include '../../head.php';
                 
                 <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
                     <?php if ($i == $page): ?>
-                        <span class="admin-btn admin-btn-current"><?= $i ?></span>
+                        <span class="admin-btn" style="background:#007cba;color:white;"><?= $i ?></span>
                     <?php else: ?>
                         <a href="?page=<?= $i ?><?= $allParams ?>" class="admin-btn"><?= $i ?></a>
                     <?php endif; ?>

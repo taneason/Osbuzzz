@@ -52,10 +52,15 @@ if ($_POST) {
 
 // Category table sorting
 $sort = $_GET['sort'] ?? 'category_id';
-$order = $_GET['order'] ?? 'asc';
+$order_direction = $_GET['order'] ?? 'asc';
 $allowed = ['category_id','category_name','description','created_at'];
 if (!in_array($sort, $allowed)) $sort = 'category_id';
-$order = strtolower($order) === 'desc' ? 'desc' : 'asc';
+$order_direction = strtolower($order_direction) === 'desc' ? 'desc' : 'asc';
+
+// Pagination
+$page = max(1, (int)($_GET['page'] ?? 1));
+$items_per_page = 10;
+$offset = ($page - 1) * $items_per_page;
 
 // Search logic
 $search = trim($_GET['search'] ?? '');
@@ -67,8 +72,15 @@ if ($search !== '') {
     $params[] = "%$search%";
 }
 
-// Get all categories with search and sorting
-$sql = "SELECT * FROM category $where ORDER BY $sort $order";
+// Get total count for pagination
+$count_sql = "SELECT COUNT(*) FROM category $where";
+$count_stm = $_db->prepare($count_sql);
+$count_stm->execute($params);
+$total_categories = $count_stm->fetchColumn();
+$total_pages = ceil($total_categories / $items_per_page);
+
+// Get categories with search, sorting and pagination
+$sql = "SELECT * FROM category $where ORDER BY $sort $order_direction LIMIT $items_per_page OFFSET $offset";
 $stm = $_db->prepare($sql);
 $stm->execute($params);
 $categories = $stm->fetchAll();
@@ -90,10 +102,10 @@ include '../../head.php';
         <table class="admin-product-table">
             <tr>
                 <th>Banner</th>
-                <th><?= sort_link('category_id','ID',$sort,$order,$search,1) ?></th>
-                <th><?= sort_link('category_name','Name',$sort,$order,$search,1) ?></th>
-                <th><?= sort_link('description','Description',$sort,$order,$search,1) ?></th>
-                <th><?= sort_link('created_at','Created',$sort,$order,$search,1) ?></th>
+                <th><?= sort_link('category_id','ID',$sort,$order_direction,$search,$page) ?></th>
+                <th><?= sort_link('category_name','Name',$sort,$order_direction,$search,$page) ?></th>
+                <th><?= sort_link('description','Description',$sort,$order_direction,$search,$page) ?></th>
+                <th><?= sort_link('created_at','Created',$sort,$order_direction,$search,$page) ?></th>
                 <th>Action</th>
             </tr>
             <?php foreach ($categories as $category): ?>
@@ -119,6 +131,37 @@ include '../../head.php';
             </tr>
             <?php endforeach; ?>
         </table>
+
+        <!-- Pagination -->
+        <?php if ($total_pages > 1): ?>
+        <div style="margin-top:20px;text-align:center;">
+            <?php
+            $searchParam = $search !== '' ? '&search=' . urlencode($search) : '';
+            $sortParam = "&sort=" . urlencode((string)$sort) . "&order=" . urlencode((string)$order_direction);
+            $allParams = $searchParam . $sortParam;
+            ?>
+            
+            <?php if ($page > 1): ?>
+                <a href="?page=1<?= $allParams ?>" class="admin-btn">First</a>
+                <a href="?page=<?= $page - 1 ?><?= $allParams ?>" class="admin-btn">Previous</a>
+            <?php endif; ?>
+            
+            <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
+                <?php if ($i == $page): ?>
+                    <span class="admin-btn" style="background:#007cba;color:white;"><?= $i ?></span>
+                <?php else: ?>
+                    <a href="?page=<?= $i ?><?= $allParams ?>" class="admin-btn"><?= $i ?></a>
+                <?php endif; ?>
+            <?php endfor; ?>
+            
+            <?php if ($page < $total_pages): ?>
+                <a href="?page=<?= $page + 1 ?><?= $allParams ?>" class="admin-btn">Next</a>
+                <a href="?page=<?= $total_pages ?><?= $allParams ?>" class="admin-btn">Last</a>
+            <?php endif; ?>
+            
+            <span style="margin-left:20px;">Page <?= $page ?> of <?= $total_pages ?> (<?= $total_categories ?> categories)</span>
+        </div>
+        <?php endif; ?>
     </section>
 </main>
 

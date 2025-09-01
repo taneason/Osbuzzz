@@ -6,33 +6,61 @@ auth();
 
 // Check if selective checkout items are specified
 $selected_cart_ids = $_SESSION['selected_cart_items'] ?? null;
+$buy_now_item = $_SESSION['buy_now_item'] ?? null;
 
-// Get cart items for current user
-if ($selected_cart_ids) {
-    // Get only selected items
-    $placeholders = str_repeat('?,', count($selected_cart_ids) - 1) . '?';
-    $stm = $_db->prepare("
-        SELECT c.cart_id, c.product_id, c.quantity, c.size,
-               p.product_name as name, p.price, 
-               p.photo, p.brand
-        FROM cart c
-        JOIN product p ON c.product_id = p.product_id
-        WHERE c.cart_id IN ($placeholders) AND c.user_id = ?
-        ORDER BY c.cart_id
-    ");
-    $params = array_merge($selected_cart_ids, [$_user->id]);
-    $stm->execute($params);
-    $cart_items = $stm->fetchAll();
-    
-    // Clear selected items from session after getting them
-    unset($_SESSION['selected_cart_items']);
+// Check if we have checkout data from previous submission (form resubmission)
+$existing_checkout_data = $_SESSION['checkout_data'] ?? null;
+if ($existing_checkout_data && isset($existing_checkout_data['cart_items'])) {
+    // Use cart items from previous checkout data to maintain consistency
+    $cart_items = $existing_checkout_data['cart_items'];
+    $is_buy_now = isset($_SESSION['buy_now_item']);
+    $is_selective_checkout = $existing_checkout_data['is_selective_checkout'] ?? false;
 } else {
-    // Get all cart items (normal checkout)
-    $cart_items = cart_get_items();
+    // Get cart items for current user (first time loading checkout)
+    if ($buy_now_item) {
+        // Handle buy now item (single item checkout without affecting cart)
+        $cart_items = [(object) [
+            'cart_id' => null, // No cart_id for buy now items
+            'product_id' => $buy_now_item['product_id'],
+            'quantity' => $buy_now_item['quantity'],
+            'size' => $buy_now_item['size'],
+            'name' => $buy_now_item['name'],
+            'price' => $buy_now_item['price'],
+            'photo' => $buy_now_item['photo'],
+            'brand' => $buy_now_item['brand']
+        ]];
+        
+        // Mark this as a buy now checkout
+        $is_buy_now = true;
+        $is_selective_checkout = false;
+    } else if ($selected_cart_ids) {
+        // Get only selected items
+        $placeholders = str_repeat('?,', count($selected_cart_ids) - 1) . '?';
+        $stm = $_db->prepare("
+            SELECT c.cart_id, c.product_id, c.quantity, c.size,
+                   p.product_name as name, p.price, 
+                   p.photo, p.brand
+            FROM cart c
+            JOIN product p ON c.product_id = p.product_id
+            WHERE c.cart_id IN ($placeholders) AND c.user_id = ?
+            ORDER BY c.cart_id
+        ");
+        $params = array_merge($selected_cart_ids, [$_user->id]);
+        $stm->execute($params);
+        $cart_items = $stm->fetchAll();
+        
+        $is_buy_now = false;
+        $is_selective_checkout = true;
+    } else {
+        // Get all cart items (normal checkout)
+        $cart_items = cart_get_items();
+        $is_buy_now = false;
+        $is_selective_checkout = false;
+    }
 }
 
-// Redirect if cart is empty
-if (count($cart_items) == 0) {
+// Redirect if cart is empty (but not for buy now orders)
+if (count($cart_items) == 0 && !isset($_SESSION['buy_now_item'])) {
     temp('error', 'Your cart is empty');
     redirect('/page/shop/cart.php');
 }
@@ -72,9 +100,6 @@ $error_class_postal_code = '';
 $error_class_phone = '';
 
 if (is_post()) {
-    // Debug: log form submission
-    error_log('Checkout form submitted. Payment method: ' . req('payment_method'));
-    
     $use_saved_address = req('use_saved_address');
     
     if ($use_saved_address) {
@@ -154,14 +179,7 @@ if (is_post()) {
         }
     }
     
-    // Debug: log any validation errors
-    if ($_err) {
-        error_log('Checkout validation errors: ' . print_r($_err, true));
-    }
-    
     if (!$_err) {
-        // Debug: log successful validation
-        error_log('Checkout validation passed. Processing payment method: ' . $payment_method);
         
         // Store checkout data in session for payment processing
         $_SESSION['checkout_data'] = [
@@ -179,18 +197,17 @@ if (is_post()) {
             'subtotal' => $subtotal,
             'shipping_fee' => $shipping_fee,
             'tax_amount' => $tax_amount,
-            'grand_total' => $grand_total
+            'grand_total' => $grand_total,
+            'is_selective_checkout' => $is_selective_checkout,
+            'cart_items' => $cart_items  // Save the actual cart items being checked out
         ];
         
         // Redirect to payment processing
         if ($payment_method == 'paypal') {
-            error_log('Redirecting to PayPal');
             redirect('/page/shop/payment_paypal.php');
         } elseif ($payment_method == 'cash_on_delivery') {
-            error_log('Redirecting to COD');
             redirect('/page/shop/payment_cod.php');
         } else {
-            error_log('Unknown payment method: ' . $payment_method);
             // Default fallback - shouldn't happen with current payment methods
             redirect('/page/shop/payment_success.php');
         }

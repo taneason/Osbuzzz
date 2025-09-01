@@ -69,18 +69,7 @@ include '../../head.php';
             </div>
         </div>
 
-        <!-- Success/Error Messages -->
-        <?php if (temp('success')): ?>
-            <div class="alert alert-success">
-                ✓ <?= temp('success') ?>
-            </div>
-        <?php endif; ?>
-        
-        <?php if (temp('error')): ?>
-            <div class="alert alert-error">
-                ✗ <?= temp('error') ?>
-            </div>
-        <?php endif; ?>
+       
         
         <?php if (count($cart_items) == 0): ?>
             <div class="empty-cart">

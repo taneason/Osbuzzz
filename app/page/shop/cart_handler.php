@@ -97,6 +97,78 @@ switch ($action) {
         echo json_encode($result);
         break;
         
+    case 'buy_now':
+        $product_id = post('product_id', 0);
+        $quantity = post('quantity', 1);
+        $size = post('size');
+        
+        // Validate input
+        if ($product_id <= 0) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Invalid product ID']);
+            exit;
+        }
+        
+        if ($quantity <= 0) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Invalid quantity']);
+            exit;
+        }
+        
+        // Validate product and stock
+        try {
+            $stm = $_db->prepare("SELECT * FROM product WHERE product_id = ?");
+            $stm->execute([$product_id]);
+            $product = $stm->fetch();
+            
+            if (!$product) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Product not found']);
+                exit;
+            }
+            
+            // Check stock for size if specified
+            if ($size) {
+                $stm = $_db->prepare("SELECT stock FROM product_variants WHERE product_id = ? AND size = ?");
+                $stm->execute([$product_id, $size]);
+                $variant = $stm->fetch();
+                $stock = $variant ? $variant->stock : 0;
+            } else {
+                $stock = $product->stock;
+            }
+            
+            if ($quantity > $stock) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => "Only $stock item(s) available"]);
+                exit;
+            }
+            
+            // Store buy now item in session for checkout
+            $_SESSION['buy_now_item'] = [
+                'product_id' => $product_id,
+                'quantity' => $quantity,
+                'size' => $size,
+                'name' => $product->product_name,
+                'price' => $product->price,
+                'photo' => $product->photo,
+                'brand' => $product->brand
+            ];
+            
+            temp('info', 'Redirecting to checkout...');
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Item prepared for checkout',
+                'redirect' => 'checkout.php'
+            ]);
+            
+        } catch (Exception $e) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+            exit;
+        }
+        break;
+        
     default:
         header('Content-Type: application/json');
         echo json_encode(['success' => false, 'message' => 'Invalid action']);

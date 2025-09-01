@@ -10,7 +10,7 @@ ini_set('display_errors', 0); // Don't display errors in output
 ini_set('log_errors', 1);
 
 // Log the request
-error_log('Payment handler called with action: ' . (post('action') ?? 'none'));
+// error_log('Payment handler called with action: ' . (post('action') ?? 'none'));
 
 // Ensure user is logged in
 if (!$_user) {
@@ -37,7 +37,27 @@ if ($action == 'process_payment') {
         }
         
         $checkout_data = $_SESSION['checkout_data'];
-        $cart_items = cart_get_items();
+        
+        // Get items for checkout - check if it's a buy now order or regular cart
+        if (isset($_SESSION['buy_now_item'])) {
+            // Handle buy now item
+            $buy_now_item = $_SESSION['buy_now_item'];
+            $cart_items = [(object) [
+                'cart_id' => null,
+                'product_id' => $buy_now_item['product_id'],
+                'quantity' => $buy_now_item['quantity'],
+                'size' => $buy_now_item['size'],
+                'name' => $buy_now_item['name'],
+                'price' => $buy_now_item['price'],
+                'photo' => $buy_now_item['photo'],
+                'brand' => $buy_now_item['brand']
+            ]];
+            $is_buy_now = true;
+        } else {
+            // Use cart items from checkout_data (already filtered for selective checkout)
+            $cart_items = $checkout_data['cart_items'] ?? cart_get_items();
+            $is_buy_now = false;
+        }
         
         if (empty($cart_items)) {
             throw new Exception('Cart is empty');
@@ -147,21 +167,47 @@ if ($action == 'process_payment') {
             'Order created via PayPal payment'
         ]);
         
-        // Clear cart
-        cart_clear();
+        // Remove items from cart after successful order
+        if (!$is_buy_now) {
+            // Get checkout configuration
+            $checkout_data = $_SESSION['checkout_data'] ?? [];
+            $is_selective_checkout = $checkout_data['is_selective_checkout'] ?? false;
+            
+            if ($is_selective_checkout) {
+                // For selective checkout, remove only the selected items
+                foreach ($cart_items as $item) {
+                    if ($item->cart_id) {  // Only remove items that have cart_id (from actual cart)
+                        cart_remove_item($item->cart_id);
+                    }
+                }
+            } else {
+                // For full cart checkout, remove all cart items
+                foreach ($cart_items as $item) {
+                    if ($item->cart_id) {
+                        cart_remove_item($item->cart_id);
+                    }
+                }
+            }
+        }
         
         // Clear checkout session data
         unset($_SESSION['checkout_data']);
+        
+        // Clear selected cart items from session
+        if (isset($_SESSION['selected_cart_items'])) {
+            unset($_SESSION['selected_cart_items']);
+        }
+        
+        // Clear buy now item from session if it exists
+        if (isset($_SESSION['buy_now_item'])) {
+            unset($_SESSION['buy_now_item']);
+        }
         
         // Commit transaction
         $_db->commit();
         
         // Send order confirmation email
-        if (send_order_confirmation_email($order_id)) {
-            error_log("Order confirmation email sent successfully for order ID: $order_id");
-        } else {
-            error_log("Failed to send order confirmation email for order ID: $order_id");
-        }
+        send_order_confirmation_email($order_id);
         
         header('Content-Type: application/json');
         echo json_encode([
@@ -176,8 +222,6 @@ if ($action == 'process_payment') {
         if ($_db->inTransaction()) {
             $_db->rollback();
         }
-        
-        error_log('Payment processing error: ' . $e->getMessage());
         
         echo json_encode([
             'success' => false,

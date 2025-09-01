@@ -382,29 +382,33 @@ function buyNow() {
         return;
     }
     
-    // Add to cart first, then redirect to cart
+    // Direct purchase - clear cart and add item then go to checkout
     const formData = new FormData();
     formData.append('product_id', <?= $product->product_id ?>);
     formData.append('quantity', quantity);
     formData.append('size', selectedSize || '');
-    formData.append('action', 'add_to_cart');
+    formData.append('action', 'buy_now');
     
     fetch('cart_handler.php', {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
     .then(data => {
+        console.log('Response data:', data);
         if (data.success) {
-            // Redirect to cart page
-            window.location.href = 'cart.php';
+            // Redirect to checkout page directly
+            window.location.href = data.redirect || 'checkout.php';
         } else {
-            alert(data.message || 'Failed to add item to cart');
+            alert('Error: ' + (data.message || 'Failed to process purchase'));
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('Failed to add item to cart');
+        console.error('Fetch error:', error);
+        alert('Network error: Failed to process purchase');
     });
 }
 
