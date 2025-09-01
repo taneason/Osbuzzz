@@ -61,6 +61,7 @@ $default_data = [
     'phone' => $_user->phone ?? ''
 ];
 
+
 // Error handling variables
 $error_class_first_name = '';
 $error_class_last_name = '';
@@ -262,13 +263,13 @@ include '../../head.php';
                         
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="first_name">First Name *</label>
-                                <?= html_text('first_name', 'placeholder="First Name" value="'.$default_data['first_name'].'"'.$error_class_first_name) ?>
+                                <label for="first_name">First Name <span class="required">*</span></label>
+                                <?= html_text('first_name', 'placeholder="First Name" '.$error_class_first_name) ?>
                                 <?= err('first_name') ?>
                             </div>
                             <div class="form-group">
-                                <label for="last_name">Last Name *</label>
-                                <?= html_text('last_name', 'placeholder="Last Name" value="'.$default_data['last_name'].'"'.$error_class_last_name) ?>
+                                <label for="last_name">Last Name <span class="required">*</span></label>
+                                <?= html_text('last_name', 'placeholder="Last Name" '.$error_class_last_name) ?>
                                 <?= err('last_name') ?>
                             </div>
                         </div>
@@ -279,8 +280,8 @@ include '../../head.php';
                         </div>
                         
                         <div class="form-group">
-                            <label for="address_line_1">Address Line 1 *</label>
-                            <?= html_text('address_line_1', 'placeholder="Street Address" value="'.$default_data['address_line_1'].'"'.$error_class_address) ?>
+                            <label for="address_line_1">Address Line 1 <span class="required">*</span></label>
+                            <?= html_text('address_line_1', 'placeholder="Street Address" '.$error_class_address) ?>
                             <?= err('address_line_1') ?>
                         </div>
                         
@@ -289,29 +290,29 @@ include '../../head.php';
                             <?= html_text('address_line_2', 'placeholder="Apartment, unit, etc."') ?>
                         </div>
                         
-                        <div class="form-row">
+                        <div class="form-row address-row">
                             <div class="form-group">
-                                <label for="city">City *</label>
-                                <?= html_text('city', 'placeholder="City"'.$error_class_city) ?>
+                                <label for="city">City <span class="required">*</span></label>
+                                <?= html_text('city', 'placeholder="City" '.$error_class_city) ?>
                                 <?= err('city') ?>
                             </div>
-                            <div class="form-group">
-                                <label for="state">Negeri *</label>
+                            <div class="form-group" style="margin-left: 10px;">
+                                <label for="state">State <span class="required">*</span></label>
                                 <select id="state" name="state" class="<?= isset($_err['state']) ? 'error' : '' ?>">
                                     <?= generate_state_options($state ?? '') ?>
                                 </select>
                                 <?= err('state') ?>
                             </div>
                             <div class="form-group">
-                                <label for="postal_code">Postal Code *</label>
-                                <?= html_text('postal_code', 'placeholder="12345"'.$error_class_postal_code) ?>
+                                <label for="postal_code">Postal Code <span class="required">*</span></label>
+                                <?= html_text('postal_code', 'placeholder="12345" '.$error_class_postal_code) ?>
                                 <?= err('postal_code') ?>
                             </div>
                         </div>
                         
                         <div class="form-group">
-                            <label for="phone">Phone Number *</label>
-                            <?= html_text('phone', 'placeholder="01X-XXX-XXXX" value="'.$default_data['phone'].'"'.$error_class_phone) ?>
+                            <label for="phone">Phone Number <span class="required">*</span></label>
+                            <?= html_text('phone', 'placeholder="01X-XXX-XXXX" '.$error_class_phone) ?>
                             <?= err('phone') ?>
                         </div>
                         
@@ -445,8 +446,13 @@ include '../../head.php';
 
 .form-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+/* Special layout for city/state/postal row */
+.form-row.address-row {
+    grid-template-columns: 2fr 1.5fr 1fr;
 }
 
 .form-group {
@@ -460,7 +466,14 @@ include '../../head.php';
     color: #2c3e50;
 }
 
+/* Red asterisk for required fields */
+.form-group label .required {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
 .form-group input,
+.form-group select,
 .form-group textarea {
     width: 100%;
     padding: 12px;
@@ -471,6 +484,7 @@ include '../../head.php';
 }
 
 .form-group input:focus,
+.form-group select:focus,
 .form-group textarea:focus {
     outline: none;
     border-color: #3498db;
@@ -733,6 +747,10 @@ include '../../head.php';
     }
     
     .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row.address-row {
         grid-template-columns: 1fr;
     }
     

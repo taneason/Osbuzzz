@@ -69,7 +69,7 @@ include '../../head.php';
             <form method="post">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="address_name">Address Name *</label>
+                        <label for="address_name">Address Name <span class="required">*</span></label>
                         <?= html_text('address_name', 'placeholder="e.g. Home, Office"') ?>
                         <?= err('address_name') ?>
                         <small class="form-hint">Give this address a name to easily identify it</small>
@@ -78,12 +78,12 @@ include '../../head.php';
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="first_name">First Name *</label>
+                        <label for="first_name">First Name <span class="required">*</span></label>
                         <?= html_text('first_name', 'placeholder="First Name"') ?>
                         <?= err('first_name') ?>
                     </div>
                     <div class="form-group">
-                        <label for="last_name">Last Name *</label>
+                        <label for="last_name">Last Name <span class="required">*</span></label>
                         <?= html_text('last_name', 'placeholder="Last Name"') ?>
                         <?= err('last_name') ?>
                     </div>
@@ -95,7 +95,7 @@ include '../../head.php';
                 </div>
                 
                 <div class="form-group">
-                    <label for="address_line_1">Address Line 1 *</label>
+                    <label for="address_line_1">Address Line 1 <span class="required">*</span></label>
                     <?= html_text('address_line_1', 'placeholder="Street Address"') ?>
                     <?= err('address_line_1') ?>
                 </div>
@@ -107,26 +107,26 @@ include '../../head.php';
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="city">City *</label>
+                        <label for="city">City <span class="required">*</span></label>
                         <?= html_text('city', 'placeholder="City"') ?>
                         <?= err('city') ?>
                     </div>
                     <div class="form-group">
-                        <label for="state">Negeri *</label>
+                        <label for="state">Negeri <span class="required">*</span></label>
                         <select id="state" name="state" class="<?= isset($_err['state']) ? 'error' : '' ?>">
                             <?= generate_state_options(post('state')) ?>
                         </select>
                         <?= err('state') ?>
                     </div>
                     <div class="form-group">
-                        <label for="postal_code">Postal Code *</label>
+                        <label for="postal_code">Postal Code <span class="required">*</span></label>
                         <?= html_text('postal_code', 'placeholder="12345"') ?>
                         <?= err('postal_code') ?>
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="phone">Phone Number *</label>
+                    <label for="phone">Phone Number <span class="required">*</span></label>
                     <?= html_text('phone', 'placeholder="01X-XXX-XXXX"') ?>
                     <?= err('phone') ?>
                 </div>
@@ -203,9 +203,7 @@ body {
     width: 150px;
 }
 
-.header-right {
-    text-align: right;
-}
+
 
 /* ===== BUTTONS ===== */
 .btn {
@@ -290,6 +288,12 @@ body {
     font-weight: 600;
     color: #2c3e50;
     font-size: 14px;
+}
+
+/* Red asterisk for required fields */
+.form-group label .required {
+    color: #e74c3c;
+    font-weight: bold;
 }
 
 .form-group input {

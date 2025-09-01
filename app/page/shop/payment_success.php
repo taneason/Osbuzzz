@@ -154,7 +154,7 @@ include '../../head.php';
         <div class="support-info">
             <h3>Need Help?</h3>
             <p>If you have any questions about your order, please contact our customer support:</p>
-            <p>Email: support@osbuzz.com | Phone: 1-800-OSBUZZ-1</p>
+            <p>Email: Osbuzzz@gmail.com | Phone: +60 10-2288878</p>
         </div>
     </div>
 </main>

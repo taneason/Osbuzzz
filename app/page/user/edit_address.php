@@ -135,7 +135,7 @@ include '../../head.php';
             <form method="post" class="address-form">
                 <div class="form-row">
                     <div class="form-group full-width">
-                        <label for="address_name">Address Name *</label>
+                        <label for="address_name">Address Name <span class="required">*</span></label>
                         <input type="text" id="address_name" name="address_name" 
                                value="<?= encode($address_name) ?>" 
                                placeholder="e.g., Home, Office, Billing Address"
@@ -148,7 +148,7 @@ include '../../head.php';
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="first_name">First Name *</label>
+                        <label for="first_name">First Name <span class="required">*</span></label>
                         <input type="text" id="first_name" name="first_name" 
                                value="<?= encode($first_name) ?>"
                                class="<?= isset($_err['first_name']) ? 'error' : '' ?>">
@@ -157,7 +157,7 @@ include '../../head.php';
                         <?php endif; ?>
                     </div>
                     <div class="form-group">
-                        <label for="last_name">Last Name *</label>
+                        <label for="last_name">Last Name <span class="required">*</span></label>
                         <input type="text" id="last_name" name="last_name" 
                                value="<?= encode($last_name) ?>"
                                class="<?= isset($_err['last_name']) ? 'error' : '' ?>">
@@ -178,7 +178,7 @@ include '../../head.php';
 
                 <div class="form-row">
                     <div class="form-group full-width">
-                        <label for="address_line_1">Address Line 1 *</label>
+                        <label for="address_line_1">Address Line 1 <span class="required">*</span></label>
                         <input type="text" id="address_line_1" name="address_line_1" 
                                value="<?= encode($address_line_1) ?>" 
                                placeholder="Street address, P.O. box, apartment, suite, unit, building, floor, etc."
@@ -200,7 +200,7 @@ include '../../head.php';
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="city">City *</label>
+                        <label for="city">City <span class="required">*</span></label>
                         <input type="text" id="city" name="city" 
                                value="<?= encode($city) ?>"
                                class="<?= isset($_err['city']) ? 'error' : '' ?>">
@@ -209,7 +209,7 @@ include '../../head.php';
                         <?php endif; ?>
                     </div>
                     <div class="form-group">
-                        <label for="state">Negeri *</label>
+                        <label for="state">Negeri <span class="required">*</span></label>
                         <select id="state" name="state" class="<?= isset($_err['state']) ? 'error' : '' ?>">
                             <?= generate_state_options($state) ?>
                         </select>
@@ -221,7 +221,7 @@ include '../../head.php';
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="postal_code">Postal Code *</label>
+                        <label for="postal_code">Postal Code <span class="required">*</span></label>
                         <input type="text" id="postal_code" name="postal_code" 
                                value="<?= encode($postal_code) ?>"
                                class="<?= isset($_err['postal_code']) ? 'error' : '' ?>">
@@ -230,7 +230,7 @@ include '../../head.php';
                         <?php endif; ?>
                     </div>
                     <div class="form-group">
-                        <label for="phone">Phone Number *</label>
+                        <label for="phone">Phone Number <span class="required">*</span></label>
                         <input type="tel" id="phone" name="phone" 
                                value="<?= encode($phone) ?>"
                                class="<?= isset($_err['phone']) ? 'error' : '' ?>">
@@ -323,6 +323,12 @@ include '../../head.php';
     margin-bottom: 8px;
     color: #2c3e50;
     font-size: 14px;
+}
+
+/* Red asterisk for required fields */
+.edit-address-page .form-group label .required {
+    color: #e74c3c;
+    font-weight: bold;
 }
 
 .edit-address-page .form-group input,
