@@ -10,7 +10,7 @@ ini_set('display_errors', 0); // Don't display errors in output
 ini_set('log_errors', 1);
 
 // Log the request
-error_log('Payment handler called with action: ' . ($_POST['action'] ?? 'none'));
+error_log('Payment handler called with action: ' . (post('action') ?? 'none'));
 
 // Ensure user is logged in
 if (!$_user) {
@@ -24,13 +24,13 @@ if (!isset($_SESSION['checkout_data'])) {
     exit;
 }
 
-$action = $_POST['action'] ?? '';
+$action = post('action');
 
 if ($action == 'process_payment') {
     try {
-        $payment_id = $_POST['payment_id'] ?? '';
-        $payer_id = $_POST['payer_id'] ?? '';
-        $payment_details = $_POST['payment_details'] ?? '';
+        $payment_id = post('payment_id');
+        $payer_id = post('payer_id');
+        $payment_details = post('payment_details');
         
         if (empty($payment_id) || empty($payment_details)) {
             throw new Exception('Invalid payment data');

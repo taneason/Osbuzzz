@@ -9,9 +9,7 @@ if (!$id) {
 }
 
 // Check if category exists
-$stm = $_db->prepare('SELECT * FROM category WHERE category_id = ?');
-$stm->execute([$id]);
-$category = $stm->fetch();
+$category = get_category_by_id($id);
 
 if (!$category) {
     temp('info', 'Category not found.');

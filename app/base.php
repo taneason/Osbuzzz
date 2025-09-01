@@ -275,17 +275,32 @@ function logout($url = '/') {
     redirect($url);
 }
 
+// Check if current user is banned (real-time check)
+function check_user_ban_status() {
+    global $_user, $_db;
+    
+    if ($_user && isset($_user->id)) {
+        // Get current status from database
+        $stm = $_db->prepare('SELECT status FROM user WHERE id = ?');
+        $stm->execute([$_user->id]);
+        $current_user = $stm->fetch();
+        
+        if ($current_user && $current_user->status === 'banned') {
+            // Update session user object
+            $_user->status = 'banned';
+            // Force logout
+            unset($_SESSION['user']);
+            temp('info', 'Your account has been banned. Please contact administrator.');
+            redirect('/page/user/login.php');
+        }
+    }
+}
 // Authorization
 function auth(...$roles) {
     global $_user;
     if ($_user) {
-        // Check if user is banned
-        if (isset($_user->status) && $_user->status === 'banned') {
-            logout();
-            temp('error', 'Your account has been banned. Please contact administrator.');
-            redirect('/page/user/login.php');
-        }
-        
+        check_user_ban_status();
+
         if ($roles) {
             if (in_array($_user->role, $roles)) {
                 return; // OK

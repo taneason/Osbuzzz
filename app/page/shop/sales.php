@@ -80,8 +80,7 @@ $stm->execute($params);
 $products = $stm->fetchAll();
 
 // Get all categories for filter
-$categoriesStm = $_db->query('SELECT * FROM category ORDER BY category_name');
-$categories = $categoriesStm->fetchAll();
+$categories = get_all_categories();
 
 include '../../head.php';
 ?>

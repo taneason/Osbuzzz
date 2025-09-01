@@ -10,9 +10,7 @@ if (!$category_id) {
 }
 
 // Get category details
-$stm = $_db->prepare('SELECT * FROM category WHERE category_id = ?');
-$stm->execute([$category_id]);
-$category = $stm->fetch();
+$category = get_category_by_id($category_id);
 
 if (!$category) {
     header('Location: /');
@@ -356,9 +354,10 @@ include '../../head.php';
             <div class="category-suggestions">
                 <h4>Browse Other Categories:</h4>
                 <?php
-                $stm = $_db->prepare('SELECT * FROM category WHERE category_id != ? ORDER BY category_name');
-                $stm->execute([$category_id]);
-                $other_categories = $stm->fetchAll();
+                $all_categories = get_all_categories();
+                $other_categories = array_filter($all_categories, function($cat) use ($category_id) {
+                    return $cat->category_id != $category_id;
+                });
                 
                 foreach ($other_categories as $cat):
                 ?>

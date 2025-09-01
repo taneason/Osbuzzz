@@ -2,13 +2,10 @@
 require_once '../../base.php';
 
 // Check if user is admin
-if (!$_user || $_user->role !== 'Admin') {
-    header("Location: ../../user/login.php");
-    exit;
-}
+auth('Admin');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id = (int)$_POST['id'];
+if (is_post()) {
+    $id = (int)post('id');
     
     // Check if trying to delete self
     if ($id == $_user->id) {

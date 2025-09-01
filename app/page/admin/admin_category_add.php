@@ -4,9 +4,9 @@ auth('Admin');
 
 $_err = [];
 
-if ($_POST) {
-    $category_name = $_POST['category_name'];
-    $description = $_POST['description'];
+if (is_post()) {
+    $category_name = post('category_name');
+    $description = post('description');
     
     // Validation
     if (!$category_name) {
@@ -57,8 +57,7 @@ include '../../head.php';
             <!-- Category info -->
             <div class="admin-form-row admin-form-row-full">
                 <label><b>Category Name</b></label>
-                <input type="text" name="category_name" value="<?= htmlspecialchars($_POST['category_name'] ?? '') ?>" 
-                       maxlength="50" placeholder="Category Name" class="admin-form-input" required>
+                <?= html_text('category_name', 'maxlength="50" placeholder="Category Name" class="admin-form-input" required') ?>
             </div>
             
             <div class="admin-form-row admin-form-row-full">

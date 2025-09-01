@@ -9,13 +9,13 @@ if (!$_user) {
 }
 
 // Get action
-$action = $_POST['action'] ?? $_GET['action'] ?? '';
+$action = post('action') ?? get('action');
 
 switch ($action) {
     case 'add_to_cart':
-        $product_id = $_POST['product_id'] ?? 0;
-        $quantity = $_POST['quantity'] ?? 1;
-        $size = $_POST['size'] ?? '';
+        $product_id = post('product_id', 0);
+        $quantity = post('quantity', 1);
+        $size = post('size');
         
         $result = cart_add_item($product_id, $quantity, $size);
         if ($result['success']) {
@@ -27,7 +27,7 @@ switch ($action) {
         break;
         
     case 'remove_from_cart':
-        $cart_id = $_POST['cart_id'] ?? 0;
+        $cart_id = post('cart_id', 0);
         
         $result = cart_remove_item($cart_id);
         if ($result['success']) {
@@ -39,8 +39,8 @@ switch ($action) {
         break;
         
     case 'update_quantity':
-        $cart_id = $_POST['cart_id'] ?? 0;
-        $quantity = $_POST['quantity'] ?? 1;
+        $cart_id = post('cart_id', 0);
+        $quantity = post('quantity', 1);
         
         $result = cart_update_quantity($cart_id, $quantity);
         if ($result['success']) {
@@ -59,7 +59,7 @@ switch ($action) {
         break;
         
     case 'remove_multiple':
-        $cart_ids_json = $_POST['cart_ids'] ?? '';
+        $cart_ids_json = post('cart_ids');
         $cart_ids = json_decode($cart_ids_json, true);
         
         if (!is_array($cart_ids) || empty($cart_ids)) {

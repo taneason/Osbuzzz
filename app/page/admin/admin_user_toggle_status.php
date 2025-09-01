@@ -8,9 +8,9 @@ if (!$_user || $_user->role !== 'Admin') {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (is_post()) {
     try {
-        $user_id = (int)$_POST['user_id'];
+        $user_id = (int)post('user_id');
         
         // Prevent admin from banning themselves
         if ($user_id == $_user->id) {
