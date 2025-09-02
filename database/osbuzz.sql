@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 02, 2025 at 10:19 PM
+-- Generation Time: Sep 02, 2025 at 10:22 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -164,13 +164,6 @@ CREATE TABLE `password_resets` (
   `expires_at` datetime NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `password_resets`
---
-
-INSERT INTO `password_resets` (`id`, `user_id`, `email`, `token`, `expires_at`, `created_at`) VALUES
-(1, 2, 'tanes-wp23@student.tarc.edu.my', '63af1249074f71a29c7b580ece1d7265751b87d2f9a2ccc6d9af7445be19a74a', '2025-09-03 03:51:50', '2025-09-02 19:46:50');
 
 -- --------------------------------------------------------
 
