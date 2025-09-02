@@ -56,11 +56,6 @@ include '../../head.php';
                 <?= html_text('email', "type='email' maxlength='100' placeholder='Email'"); ?>
                 <?= err('email') ?>
             </div>
-            <div class="admin-form-row admin-form-row-full">
-                <label><b>Name</b></label>
-                <?= html_text('name', "maxlength='100' placeholder='Full Name'"); ?>
-                <?= err('name') ?>
-            </div>
             <div class="admin-form-row">
                 <label><b>Password</b></label>
                 <?= html_password('password', "placeholder='Password'"); ?>
