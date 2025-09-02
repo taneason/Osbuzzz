@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 02, 2025 at 10:12 PM
+-- Generation Time: Sep 02, 2025 at 10:19 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -477,7 +477,15 @@ INSERT INTO `product_variants` (`variant_id`, `product_id`, `size`, `stock`) VAL
 (12, 1, '41', 5),
 (13, 2, '38', 2),
 (14, 3, '36', 5),
-(15, 4, '36', 3);
+(15, 4, '36', 3),
+(16, 81, '37', 5),
+(17, 81, '38', 6),
+(18, 81, '39', 5),
+(19, 80, '38', 10),
+(20, 80, '37', 5),
+(21, 79, '38', 2),
+(22, 79, '36', 4),
+(23, 79, '37', 5);
 
 -- --------------------------------------------------------
 
@@ -664,7 +672,7 @@ ALTER TABLE `product_photos`
 -- AUTO_INCREMENT for table `product_variants`
 --
 ALTER TABLE `product_variants`
-  MODIFY `variant_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `variant_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `user`

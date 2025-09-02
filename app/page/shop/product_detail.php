@@ -129,9 +129,6 @@ include '../../head.php';
 
             <div class="product-features">
                 <div class="feature-item">
-                    <span>✓</span> Free shipping on orders over RM 200
-                </div>
-                <div class="feature-item">
                     <span>✓</span> 30-day return policy
                 </div>
                 <div class="feature-item">
