@@ -51,7 +51,8 @@ ALTER TABLE user AUTO_INCREMENT = 1;
 -- Uncomment the following lines if you want to create a default admin account
 -- Password is 'admin123' (SHA1 hashed)
 INSERT INTO user (username, email, password, photo, role, created_at, status) VALUES 
-('admin', 'admin@osbuzz.com', 'd033e22ae348aeb5660fc2140aec35850c4da997', '', 'Admin', NOW(), 'active');
+('admin', 'admin@osbuzz.com', 'f865b53623b121fd34ee5426c792e5c33af8c227', '', 'Admin', NOW(), 'active');
+
 
 
 -- Success message
