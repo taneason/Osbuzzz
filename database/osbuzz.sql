@@ -223,7 +223,7 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id`, `username`, `email`, `password`, `photo`, `role`, `created_at`, `status`) VALUES
-(1, 'admin', 'admin@osbuzz.com', 'd033e22ae348aeb5660fc2140aec35850c4da997', '', 'Admin', '2025-09-02 09:08:37', 'active');
+(1, 'admin', 'admin@osbuzz.com', 'f865b53623b121fd34ee5426c792e5c33af8c227', '', 'Admin', '2025-09-02 09:08:37', 'active');
 
 --
 -- Indexes for dumped tables
