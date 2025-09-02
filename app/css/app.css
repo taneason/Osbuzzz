@@ -737,19 +737,19 @@ select:focus {
 
 @keyframes backgroundCycle {
     0%, 25% {
-        background-image: url('/images/menu/Season1.png');
+        background-image: url('/images/menu/Season1.jpg');
         opacity: 1;
     }
     30%, 55% {
-        background-image: url('/images/menu/Season2.png');
+        background-image: url('/images/menu/Season2.jpg');
         opacity: 1;
     }
     60%, 85% {
-        background-image: url('/images/menu/Season3.png');
+        background-image: url('/images/menu/Season3.jpg');
         opacity: 1;
     }
     86%, 100% {
-        background-image: url('/images/menu/Season4.png');
+        background-image: url('/images/menu/Season4.jpg');
         opacity: 0.9;
     }
 }
