@@ -2,6 +2,17 @@
 require 'base.php';
 
 include 'head.php';
+
+// Fetch categories from database
+$categories = [];
+if (isset($_db)) {
+    $stmt = $_db->prepare("SELECT * FROM category ORDER BY category_name ASC");
+    $stmt->execute();
+    $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Debug: Uncomment the line below to check if categories are loaded
+//echo "<pre>Categories: " . print_r($categories, true) . "</pre>";
 ?>
 
 <?php if (!$_user ||$_user->role != 'Admin'): ?>
@@ -17,42 +28,33 @@ include 'head.php';
             <a href="/page/shop/sales.php" class="cta-button">Shop Now</a>
         </div>
     </section>
-</main>
 
-    <section class="featured-categories">
-        <div class="category-card" onclick="location.href='/page/categories/running.php'">
-            <img src="/images/menu/men.png" alt="Running">
-            <div class="category-overlay">
-                <h3>Running</h3>
-            </div>
-        </div>
-        <div class="category-card" onclick="location.href='/page/categories/casual.php'">
-            <img src="/images/menu/women.png" alt="Casual">
-            <div class="category-overlay">
-                <h3>Casual</h3>
-            </div>
-        </div>
-        <div class="category-card" onclick="location.href='/page/categories/basketball.php'">
-            <img src="/images/menu/kids.png" alt="Basketball">
-            <div class="category-overlay">
-                <h3>Basketball</h3>
-            </div>
+    <section class="shop-by-category-section">
+        <h2 class="section-title">Shop by Category</h2>
+        <div class="featured-categories">
+            <?php if (empty($categories)): ?>
+                <p>No categories found. Database categories count: <?php echo count($categories); ?></p>
+                <p>Database connection status: <?php echo isset($_db) ? 'Connected' : 'Not connected'; ?></p>
+            <?php else: ?>
+                <?php foreach ($categories as $category): ?>
+                <div class="category-card" onclick="location.href='/page/categories/category.php?id=<?php echo $category['category_id']; ?>'">
+                    <?php 
+                    $banner_src = !empty($category['banner_image']) 
+                        ? '/images/banners/' . $category['banner_image']
+                        : '/images/default-category.jpg';
+                    ?>
+                    <img src="<?php echo htmlspecialchars($banner_src); ?>" alt="<?php echo htmlspecialchars($category['category_name']); ?>">
+                    <div class="category-overlay">
+                        <h3><?php echo htmlspecialchars($category['category_name']); ?></h3>
+                        <?php if (!empty($category['description'])): ?>
+                        <p><?php echo htmlspecialchars($category['description']); ?></p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </section>
-    
-
-    <section class="promo-banner">
-    <div class="promo-container">
-        <div class="promo-photo">
-            <img src="/images/menu/sales.png" alt="Summersales">
-        </div>
-        <div class="promo-content">
-            <h2>Summer Sale</h2>
-            <p>30% Off For Selected Items</p>
-            <a href="/page/shop/sales.php" class="cta-button">Shop Sale</a>
-        </div>
-    </div>
-</section>
 </main>
 <?php else: ?>
 <main>
