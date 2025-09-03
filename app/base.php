@@ -1134,3 +1134,61 @@ function get_state_name($state_code) {
     global $MALAYSIA_STATES;
     return $MALAYSIA_STATES[$state_code] ?? $state_code;
 }
+
+// ============================================================================
+// Validation Functions
+// ============================================================================
+
+// Validate Malaysian phone number
+function validate_malaysian_phone($phone) {
+    // Remove all spaces, hyphens, and plus signs
+    $clean_phone = preg_replace('/[\s\-\+\(\)]/', '', $phone);
+    
+    // Malaysian phone number patterns:
+    // Mobile: 01X-XXXXXXX (10-11 digits starting with 01)
+    // Landline: 0X-XXXXXXX (9-10 digits starting with 0)
+    // International format: +601X-XXXXXXX or 601X-XXXXXXX
+    
+    // Check for international format (+60 or 60)
+    if (preg_match('/^(\+?60)/', $clean_phone)) {
+        $clean_phone = preg_replace('/^\+?60/', '0', $clean_phone);
+    }
+    
+    // Validate format
+    if (preg_match('/^0\d{8,10}$/', $clean_phone)) {
+        // Check specific mobile prefixes (more comprehensive)
+        if (preg_match('/^01[0-9]\d{7,8}$/', $clean_phone)) {
+            return true; // Mobile number
+        }
+        // Check landline prefixes (03, 04, 05, 06, 07, 08, 09)
+        if (preg_match('/^0[3-9]\d{7,8}$/', $clean_phone)) {
+            return true; // Landline number
+        }
+    }
+    
+    return false;
+}
+
+// Format Malaysian phone number for display
+function format_malaysian_phone($phone) {
+    // Clean the phone number
+    $clean_phone = preg_replace('/[\s\-\+\(\)]/', '', $phone);
+    
+    // Handle international format
+    if (preg_match('/^(\+?60)/', $clean_phone)) {
+        $clean_phone = preg_replace('/^\+?60/', '0', $clean_phone);
+    }
+    
+    // Format mobile numbers (01X-XXX-XXXX)
+    if (preg_match('/^(01\d)(\d{3,4})(\d{4})$/', $clean_phone, $matches)) {
+        return $matches[1] . '-' . $matches[2] . '-' . $matches[3];
+    }
+    
+    // Format landline numbers (0X-XXXX-XXXX)
+    if (preg_match('/^(0[3-9])(\d{4})(\d{4})$/', $clean_phone, $matches)) {
+        return $matches[1] . '-' . $matches[2] . '-' . $matches[3];
+    }
+    
+    // Return original if no pattern matches
+    return $phone;
+}

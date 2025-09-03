@@ -15,8 +15,26 @@ if (is_post()) {
     if ($action == 'delete_address') {
         $address_id = req('address_id');
         
+        // Check if this is the default address
+        $stm = $_db->prepare('SELECT is_default FROM customer_addresses WHERE address_id = ? AND user_id = ?');
+        $stm->execute([$address_id, $_user->id]);
+        $was_default = $stm->fetchColumn();
+        
+        // Delete the address
         $stm = $_db->prepare('DELETE FROM customer_addresses WHERE address_id = ? AND user_id = ?');
         $stm->execute([$address_id, $_user->id]);
+        
+        // If we deleted the default address, set another address as default
+        if ($was_default) {
+            $stm = $_db->prepare('SELECT address_id FROM customer_addresses WHERE user_id = ? ORDER BY created_at ASC LIMIT 1');
+            $stm->execute([$_user->id]);
+            $next_address_id = $stm->fetchColumn();
+            
+            if ($next_address_id) {
+                $stm = $_db->prepare('UPDATE customer_addresses SET is_default = 1 WHERE address_id = ? AND user_id = ?');
+                $stm->execute([$next_address_id, $_user->id]);
+            }
+        }
         
         temp('success', 'Address deleted successfully');
         redirect('/page/user/addresses.php');
@@ -52,12 +70,6 @@ include '../../head.php';
             </div>
         </div>
         
-        <!-- Success/Error Messages -->
-        <?php if (temp('success')): ?>
-            <div class="alert alert-success">
-                <i>✓</i> <?= temp('success') ?>
-            </div>
-        <?php endif; ?>
         
         <!-- Addresses List -->
         <div class="addresses-list">
@@ -67,6 +79,7 @@ include '../../head.php';
                     <h3>No addresses found</h3>
                     <p>You haven't added any addresses yet.</p>
                     <p>Add your first address to make checkout faster and easier!</p>
+                    <p><small><em>Your first address will automatically be set as the default address.</em></small></p>
                     <a href="add_address.php" class="btn btn-primary btn-lg">Add Your First Address</a>
                 </div>
             <?php else: ?>
@@ -99,7 +112,7 @@ include '../../head.php';
                                 </div>
                                 
                                 <div class="contact-details">
-                                    <div class="phone">📞 <?= encode($address->phone) ?></div>
+                                    <div class="phone">📞 <?= encode(format_malaysian_phone($address->phone)) ?></div>
                                 </div>
                             </div>
                             
@@ -118,7 +131,13 @@ include '../../head.php';
                                     </form>
                                 <?php endif; ?>
                                 
-                                <form method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this address?')">
+                                <?php 
+                                $total_addresses = count($addresses);
+                                $delete_warning = $address->is_default && $total_addresses == 1 ? 
+                                    'This is your only address and default address. Are you sure you want to delete it?' : 
+                                    'Are you sure you want to delete this address?';
+                                ?>
+                                <form method="post" style="display: inline;" onsubmit="return confirm('<?= $delete_warning ?>')">
                                     <input type="hidden" name="action" value="delete_address">
                                     <input type="hidden" name="address_id" value="<?= $address->address_id ?>">
                                     <button type="submit" class="btn btn-sm btn-danger" title="Delete address">

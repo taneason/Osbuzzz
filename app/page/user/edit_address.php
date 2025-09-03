@@ -64,8 +64,8 @@ if (is_post()) {
 
     if ($phone == '') {
         $_err['phone'] = 'Phone number is required';
-    } elseif (!preg_match('/^[\+]?[0-9\-\(\)\s]{10,}$/', $phone)) {
-        $_err['phone'] = 'Invalid phone number format';
+    } else if (!validate_malaysian_phone($phone)) {
+        $_err['phone'] = 'Please enter a valid Malaysian phone number (e.g., 012-345-6789)';
     }
 
     // If no errors, update the address
@@ -233,10 +233,12 @@ include '../../head.php';
                         <label for="phone">Phone Number <span class="required">*</span></label>
                         <input type="tel" id="phone" name="phone" 
                                value="<?= encode($phone) ?>"
+                               placeholder="012-345-6789 or 03-1234-5678"
                                class="<?= isset($_err['phone']) ? 'error' : '' ?>">
                         <?php if (isset($_err['phone'])): ?>
                             <span class="error-message"><?= $_err['phone'] ?></span>
                         <?php endif; ?>
+                        <small class="form-hint">Enter Malaysian phone number (mobile: 01X-XXX-XXXX, landline: 0X-XXXX-XXXX)</small>
                     </div>
                 </div>
 
@@ -262,6 +264,54 @@ include '../../head.php';
     </div>
 </main>
 </div>
+}
+</style>
+
+<script>
+// Auto-format Malaysian phone number as user types
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneInput = document.getElementById('phone');
+    
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
+            
+            // Format mobile numbers (01X-XXX-XXXX)
+            if (value.startsWith('01') && value.length >= 3) {
+                if (value.length <= 3) {
+                    value = value;
+                } else if (value.length <= 6) {
+                    value = value.slice(0, 3) + '-' + value.slice(3);
+                } else if (value.length <= 10) {
+                    value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6);
+                } else {
+                    value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 11);
+                }
+            }
+            // Format landline numbers (0X-XXXX-XXXX)
+            else if (value.startsWith('0') && value.length >= 2) {
+                if (value.length <= 2) {
+                    value = value;
+                } else if (value.length <= 6) {
+                    value = value.slice(0, 2) + '-' + value.slice(2);
+                } else if (value.length <= 10) {
+                    value = value.slice(0, 2) + '-' + value.slice(2, 6) + '-' + value.slice(6);
+                }
+            }
+            
+            e.target.value = value;
+        });
+        
+        // Handle paste events
+        phoneInput.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                phoneInput.dispatchEvent(new Event('input'));
+            }, 10);
+        });
+    }
+});
+</script>
+
 <?php include '../../foot.php'; ?>
 
 <style>

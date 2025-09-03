@@ -25,9 +25,23 @@ if (is_post()) {
     if ($city == '') $_err['city'] = 'City is required';
     if ($state == '') $_err['state'] = 'State is required';
     if ($postal_code == '') $_err['postal_code'] = 'Postal code is required';
-    if ($phone == '') $_err['phone'] = 'Phone number is required';
+    if ($phone == '') {
+        $_err['phone'] = 'Phone number is required';
+    } else if (!validate_malaysian_phone($phone)) {
+        $_err['phone'] = 'Please enter a valid Malaysian phone number (e.g., 012-345-6789)';
+    }
     
     if (!$_err) {
+        // Check if user has any existing addresses
+        $stm = $_db->prepare('SELECT COUNT(*) FROM customer_addresses WHERE user_id = ?');
+        $stm->execute([$_user->id]);
+        $address_count = $stm->fetchColumn();
+        
+        // If this is the first address, make it default automatically
+        if ($address_count == 0) {
+            $is_default = 1;
+        }
+        
         // If this is set as default, remove default from other addresses
         if ($is_default) {
             $stm = $_db->prepare('UPDATE customer_addresses SET is_default = 0 WHERE user_id = ?');
@@ -127,8 +141,9 @@ include '../../head.php';
                 
                 <div class="form-group">
                     <label for="phone">Phone Number <span class="required">*</span></label>
-                    <?= html_text('phone', 'placeholder="01X-XXX-XXXX"') ?>
+                    <?= html_text('phone', 'placeholder="012-345-6789 or 03-1234-5678"') ?>
                     <?= err('phone') ?>
+                    <small class="form-hint">Enter Malaysian phone number (mobile: 01X-XXX-XXXX, landline: 0X-XXXX-XXXX)</small>
                 </div>
                 
                 <div class="form-group checkbox-group">
@@ -137,7 +152,7 @@ include '../../head.php';
                         <span class="checkmark"></span>
                         Set as default address
                     </label>
-                    <small class="form-hint">This address will be used as default for checkout</small>
+                    <small class="form-hint">This address will be used as default for checkout. Your first address will automatically be set as default.</small>
                 </div>
                 
                 <div class="form-actions">
@@ -420,6 +435,51 @@ body {
     }
 }
 </style>
+
+<script>
+// Auto-format Malaysian phone number as user types
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneInput = document.getElementById('phone');
+    
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
+            
+            // Format mobile numbers (01X-XXX-XXXX)
+            if (value.startsWith('01') && value.length >= 3) {
+                if (value.length <= 3) {
+                    value = value;
+                } else if (value.length <= 6) {
+                    value = value.slice(0, 3) + '-' + value.slice(3);
+                } else if (value.length <= 10) {
+                    value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6);
+                } else {
+                    value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 11);
+                }
+            }
+            // Format landline numbers (0X-XXXX-XXXX)
+            else if (value.startsWith('0') && value.length >= 2) {
+                if (value.length <= 2) {
+                    value = value;
+                } else if (value.length <= 6) {
+                    value = value.slice(0, 2) + '-' + value.slice(2);
+                } else if (value.length <= 10) {
+                    value = value.slice(0, 2) + '-' + value.slice(2, 6) + '-' + value.slice(6);
+                }
+            }
+            
+            e.target.value = value;
+        });
+        
+        // Handle paste events
+        phoneInput.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                phoneInput.dispatchEvent(new Event('input'));
+            }, 10);
+        });
+    }
+});
+</script>
 
 <?php
 include '../../foot.php';
