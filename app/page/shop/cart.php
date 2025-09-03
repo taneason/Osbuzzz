@@ -741,12 +741,13 @@ function updateQuantity(cartId, newQuantity) {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
+    .then(response => response.text())
+    .then(text => {
+        const parts = text.trim().split(':');
+        if (parts[0] === 'SUCCESS') {
             location.reload(); // Refresh page to show updated quantities and totals
         } else {
-            alert(data.message || 'Failed to update quantity');
+            alert(parts.slice(1).join(':') || 'Failed to update quantity');
         }
     })
     .catch(error => {
@@ -768,12 +769,13 @@ function removeFromCart(cartId) {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
+    .then(response => response.text())
+    .then(text => {
+        const parts = text.trim().split(':');
+        if (parts[0] === 'SUCCESS') {
             location.reload(); // Refresh page to show flash message
         } else {
-            alert(data.message || 'Failed to remove item');
+            alert(parts.slice(1).join(':') || 'Failed to remove item');
         }
     })
     .catch(error => {
@@ -798,18 +800,19 @@ function removeSelected() {
     
     const formData = new FormData();
     formData.append('action', 'remove_multiple');
-    formData.append('cart_ids', JSON.stringify(cartIds));
+    formData.append('cart_ids', cartIds.join(','));  // Use comma-separated string instead of JSON
     
     fetch('cart_handler.php', {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
+    .then(response => response.text())
+    .then(text => {
+        const parts = text.trim().split(':');
+        if (parts[0] === 'SUCCESS') {
             location.reload();
         } else {
-            alert(data.message || 'Failed to remove items');
+            alert(parts.slice(1).join(':') || 'Failed to remove items');
         }
     })
     .catch(error => {
@@ -830,12 +833,13 @@ function clearCart() {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
+    .then(response => response.text())
+    .then(text => {
+        const parts = text.trim().split(':');
+        if (parts[0] === 'SUCCESS') {
             location.reload(); // Refresh page to show flash message
         } else {
-            alert(data.message || 'Failed to clear cart');
+            alert(parts.slice(1).join(':') || 'Failed to clear cart');
         }
     })
     .catch(error => {

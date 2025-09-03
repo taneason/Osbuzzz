@@ -3,8 +3,8 @@ require '../../base.php';
 
 // Ensure user is logged in for cart operations
 if (!$_user) {
-    header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'Please login to access cart']);
+    header('Content-Type: text/plain');
+    echo "ERROR:Please login to access cart";
     exit;
 }
 
@@ -20,10 +20,10 @@ switch ($action) {
         $result = cart_add_item($product_id, $quantity, $size);
         if ($result['success']) {
             temp('info', $result['message']);
+            echo "SUCCESS:" . $result['message'];
+        } else {
+            echo "ERROR:" . $result['message'];
         }
-        
-        header('Content-Type: application/json');
-        echo json_encode($result);
         break;
         
     case 'remove_from_cart':
@@ -32,10 +32,10 @@ switch ($action) {
         $result = cart_remove_item($cart_id);
         if ($result['success']) {
             temp('info', $result['message']);
+            echo "SUCCESS:" . $result['message'];
+        } else {
+            echo "ERROR:" . $result['message'];
         }
-        
-        header('Content-Type: application/json');
-        echo json_encode($result);
         break;
         
     case 'update_quantity':
@@ -45,26 +45,24 @@ switch ($action) {
         $result = cart_update_quantity($cart_id, $quantity);
         if ($result['success']) {
             temp('info', $result['message']);
+            echo "SUCCESS:" . $result['message'];
+        } else {
+            echo "ERROR:" . $result['message'];
         }
-        
-        header('Content-Type: application/json');
-        echo json_encode($result);
         break;
         
     case 'get_count':
         $count = cart_get_count();
-        
-        header('Content-Type: application/json');
-        echo json_encode(['count' => $count]);
+        echo "SUCCESS:$count";
         break;
         
     case 'remove_multiple':
-        $cart_ids_json = post('cart_ids');
-        $cart_ids = json_decode($cart_ids_json, true);
+        // Parse cart IDs from comma-separated string instead of JSON
+        $cart_ids_string = post('cart_ids');
+        $cart_ids = array_filter(array_map('intval', explode(',', $cart_ids_string)));
         
-        if (!is_array($cart_ids) || empty($cart_ids)) {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'No items selected']);
+        if (empty($cart_ids)) {
+            echo "ERROR:No items selected";
             exit;
         }
         
@@ -78,23 +76,20 @@ switch ($action) {
         
         if ($removed_count > 0) {
             temp('success', "$removed_count item(s) removed from cart");
-            $response = ['success' => true, 'message' => "$removed_count item(s) removed from cart"];
+            echo "SUCCESS:$removed_count item(s) removed from cart";
         } else {
-            $response = ['success' => false, 'message' => 'Failed to remove items from cart'];
+            echo "ERROR:Failed to remove items from cart";
         }
-        
-        header('Content-Type: application/json');
-        echo json_encode($response);
         break;
         
     case 'clear_cart':
         $result = cart_clear();
         if ($result['success']) {
             temp('info', $result['message']);
+            echo "SUCCESS:" . $result['message'];
+        } else {
+            echo "ERROR:" . $result['message'];
         }
-        
-        header('Content-Type: application/json');
-        echo json_encode($result);
         break;
         
     case 'buy_now':
@@ -104,14 +99,12 @@ switch ($action) {
         
         // Validate input
         if ($product_id <= 0) {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Invalid product ID']);
+            echo "ERROR:Invalid product ID";
             exit;
         }
         
         if ($quantity <= 0) {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Invalid quantity']);
+            echo "ERROR:Invalid quantity";
             exit;
         }
         
@@ -122,8 +115,7 @@ switch ($action) {
             $product = $stm->fetch();
             
             if (!$product) {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => 'Product not found']);
+                echo "ERROR:Product not found";
                 exit;
             }
             
@@ -138,8 +130,7 @@ switch ($action) {
             }
             
             if ($quantity > $stock) {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => "Only $stock item(s) available"]);
+                echo "ERROR:Only $stock item(s) available";
                 exit;
             }
             
@@ -155,23 +146,16 @@ switch ($action) {
             ];
             
             temp('info', 'Redirecting to checkout...');
-            header('Content-Type: application/json');
-            echo json_encode([
-                'success' => true, 
-                'message' => 'Item prepared for checkout',
-                'redirect' => 'checkout.php'
-            ]);
+            echo "SUCCESS:checkout.php";
             
         } catch (Exception $e) {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+            echo "ERROR:Database error: " . $e->getMessage();
             exit;
         }
         break;
         
     default:
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'Invalid action']);
+        echo "ERROR:Invalid action";
         break;
 }
 ?>

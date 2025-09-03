@@ -183,11 +183,15 @@ function updateStockInfo() {
     if (selectedSize) {
         // Get stock for selected size
         fetch(`stock_api.php?action=get_size_stock&product_id=<?= $product->product_id ?>&size=${selectedSize}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                currentStock = data.available_stock;
-                cartQuantity = data.cart_quantity;
+        .then(response => response.text())
+        .then(text => {
+            // Parse response format: SUCCESS:stock:cart_quantity:available_stock or ERROR:message
+            const parts = text.trim().split(':');
+            
+            if (parts[0] === 'SUCCESS' && parts.length >= 4) {
+                const stock = parseInt(parts[1]);
+                cartQuantity = parseInt(parts[2]);
+                currentStock = parseInt(parts[3]);
                 
                 const stockInfo = document.getElementById('stockInfo');
                 const quantityInput = document.getElementById('quantity');
@@ -200,7 +204,7 @@ function updateStockInfo() {
                     quantityInput.max = 0;
                     quantityInput.value = 0;
                 } else {
-                    stockInfo.innerHTML = `${data.stock} total in stock`;
+                    stockInfo.innerHTML = `${stock} total in stock`;
                     if (cartQuantity > 0) {
                         stockInfo.innerHTML += `<br><small>You have ${cartQuantity} in cart (${currentStock} available to add)</small>`;
                     }
@@ -209,6 +213,8 @@ function updateStockInfo() {
                 }
                 
                 updateAddToCartButton();
+            } else {
+                console.error('Error fetching stock info:', text);
             }
         })
         .catch(error => {
@@ -217,11 +223,15 @@ function updateStockInfo() {
     } else {
         // Reset to total stock
         fetch(`stock_api.php?action=get_total_stock&product_id=<?= $product->product_id ?>`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                currentStock = data.available_stock;
-                cartQuantity = data.cart_quantity;
+        .then(response => response.text())
+        .then(text => {
+            // Parse response format: SUCCESS:total_stock:cart_quantity:available_stock or ERROR:message
+            const parts = text.trim().split(':');
+            
+            if (parts[0] === 'SUCCESS' && parts.length >= 4) {
+                const totalStock = parseInt(parts[1]);
+                cartQuantity = parseInt(parts[2]);
+                currentStock = parseInt(parts[3]);
                 
                 const stockInfo = document.getElementById('stockInfo');
                 const quantityInput = document.getElementById('quantity');
@@ -234,7 +244,7 @@ function updateStockInfo() {
                     quantityInput.max = 0;
                     quantityInput.value = 0;
                 } else {
-                    stockInfo.innerHTML = `${data.total_stock} total in stock`;
+                    stockInfo.innerHTML = `${totalStock} total in stock`;
                     if (cartQuantity > 0) {
                         stockInfo.innerHTML += `<br><small>You have ${cartQuantity} in cart (${currentStock} available to add)</small>`;
                     }
@@ -243,6 +253,8 @@ function updateStockInfo() {
                 }
                 
                 updateAddToCartButton();
+            } else {
+                console.error('Error fetching stock info:', text);
             }
         })
         .catch(error => {
@@ -332,14 +344,15 @@ function addToCart() {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
+    .then(response => response.text())
+    .then(text => {
+        const parts = text.trim().split(':');
+        if (parts[0] === 'SUCCESS') {
             // Update stock info and refresh page to show flash message
             updateStockInfo();
             window.location.reload();
         } else {
-            alert(data.message || 'Failed to add item to cart');
+            alert(parts.slice(1).join(':') || 'Failed to add item to cart');
         }
     })
     .catch(error => {
@@ -392,15 +405,17 @@ function buyNow() {
     })
     .then(response => {
         console.log('Response status:', response.status);
-        return response.json();
+        return response.text();
     })
-    .then(data => {
-        console.log('Response data:', data);
-        if (data.success) {
-            // Redirect to checkout page directly
-            window.location.href = data.redirect || 'checkout.php';
+    .then(text => {
+        console.log('Response text:', text);
+        const parts = text.trim().split(':');
+        if (parts[0] === 'SUCCESS' && parts.length >= 2) {
+            // parts[1] should contain redirect URL
+            const redirectUrl = parts[1];
+            window.location.href = redirectUrl || 'checkout.php';
         } else {
-            alert('Error: ' + (data.message || 'Failed to process purchase'));
+            alert('Error: ' + parts.slice(1).join(':') || 'Failed to process purchase');
         }
     })
     .catch(error => {
@@ -411,11 +426,15 @@ function buyNow() {
 
 function updateCartCount() {
     fetch('cart_handler.php?action=get_count')
-    .then(response => response.json())
-    .then(data => {
-        const cartCount = document.querySelector('.cart-count');
-        if (cartCount && data.count !== undefined) {
-            cartCount.textContent = data.count;
+    .then(response => response.text())
+    .then(text => {
+        const parts = text.trim().split(':');
+        if (parts[0] === 'SUCCESS' && parts.length >= 2) {
+            const count = parseInt(parts[1]) || 0;
+            const cartCount = document.querySelector('.cart-count');
+            if (cartCount) {
+                cartCount.textContent = count;
+            }
         }
     })
     .catch(error => console.error('Error updating cart count:', error));

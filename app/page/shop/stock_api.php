@@ -1,8 +1,8 @@
 <?php
 require '../../base.php';
 
-// Set content type to JSON
-header('Content-Type: application/json');
+// Set content type to plain text
+header('Content-Type: text/plain');
 
 $action = $_GET['action'] ?? '';
 $product_id = (int)($_GET['product_id'] ?? 0);
@@ -12,7 +12,7 @@ switch ($action) {
         $size = $_GET['size'] ?? '';
         
         if (!$product_id || !$size) {
-            echo json_encode(['success' => false, 'message' => 'Missing parameters']);
+            echo "ERROR:Missing parameters";
             exit;
         }
         
@@ -34,17 +34,13 @@ switch ($action) {
         
         $available_stock = max(0, $stock - $cart_quantity);
         
-        echo json_encode([
-            'success' => true,
-            'stock' => $stock,
-            'cart_quantity' => $cart_quantity,
-            'available_stock' => $available_stock
-        ]);
+        // Return data in simple format: SUCCESS:stock:cart_quantity:available_stock
+        echo "SUCCESS:$stock:$cart_quantity:$available_stock";
         break;
         
     case 'get_total_stock':
         if (!$product_id) {
-            echo json_encode(['success' => false, 'message' => 'Missing product ID']);
+            echo "ERROR:Missing product ID";
             exit;
         }
         
@@ -66,16 +62,12 @@ switch ($action) {
         
         $available_stock = max(0, $total_stock - $cart_quantity);
         
-        echo json_encode([
-            'success' => true,
-            'total_stock' => $total_stock,
-            'cart_quantity' => $cart_quantity,
-            'available_stock' => $available_stock
-        ]);
+        // Return data in simple format: SUCCESS:total_stock:cart_quantity:available_stock
+        echo "SUCCESS:$total_stock:$cart_quantity:$available_stock";
         break;
         
     default:
-        echo json_encode(['success' => false, 'message' => 'Invalid action']);
+        echo "ERROR:Invalid action";
         break;
 }
 ?>

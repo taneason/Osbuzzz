@@ -147,7 +147,9 @@ paypal.Buttons({
             formData.append('action', 'process_payment');
             formData.append('payment_id', details.id);
             formData.append('payer_id', details.payer.payer_id);
-            formData.append('payment_details', JSON.stringify(details));
+            formData.append('payment_status', details.status);
+            formData.append('amount', details.purchase_units[0].amount.value);
+            formData.append('currency', details.purchase_units[0].amount.currency_code);
             
             fetch('payment_handler.php', {
                 method: 'POST',
@@ -166,19 +168,13 @@ paypal.Buttons({
             .then(text => {
                 console.log('Raw response:', text);
                 
-                try {
-                    const data = JSON.parse(text);
-                    console.log('Parsed data:', data);
-                    
-                    if (data.success) {
-                        // Redirect to success page
-                        window.location.href = 'payment_success.php?order_id=' + data.order_id;
-                    } else {
-                        alert('Error processing order: ' + data.message);
-                    }
-                } catch (parseError) {
-                    console.error('JSON parse error:', parseError);
-                    alert('Invalid response from server. Response: ' + text);
+                const parts = text.trim().split(':');
+                if (parts[0] === 'SUCCESS' && parts.length >= 2) {
+                    // parts[1] should contain the order_id
+                    const order_id = parts[1];
+                    window.location.href = 'payment_success.php?order_id=' + order_id;
+                } else {
+                    alert('Error processing order: ' + parts.slice(1).join(':'));
                 }
             })
             .catch(error => {

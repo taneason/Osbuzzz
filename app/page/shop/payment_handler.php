@@ -1,26 +1,23 @@
 <?php
 require '../../base.php';
 
-// Set JSON content type at the very beginning
-header('Content-Type: application/json');
+// Set plain text content type
+header('Content-Type: text/plain');
 
 // Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 0); // Don't display errors in output
 ini_set('log_errors', 1);
 
-// Log the request
-// error_log('Payment handler called with action: ' . (post('action') ?? 'none'));
-
 // Ensure user is logged in
 if (!$_user) {
-    echo json_encode(['success' => false, 'message' => 'Please login to complete order']);
+    echo "ERROR:Please login to complete order";
     exit;
 }
 
 // Check if checkout data exists in session
 if (!isset($_SESSION['checkout_data'])) {
-    echo json_encode(['success' => false, 'message' => 'Checkout session expired']);
+    echo "ERROR:Checkout session expired";
     exit;
 }
 
@@ -30,9 +27,11 @@ if ($action == 'process_payment') {
     try {
         $payment_id = post('payment_id');
         $payer_id = post('payer_id');
-        $payment_details = post('payment_details');
+        $payment_status = post('payment_status');
+        $amount = post('amount');
+        $currency = post('currency');
         
-        if (empty($payment_id) || empty($payment_details)) {
+        if (empty($payment_id)) {
             throw new Exception('Invalid payment data');
         }
         
@@ -209,13 +208,7 @@ if ($action == 'process_payment') {
         // Send order confirmation email
         send_order_confirmation_email($order_id);
         
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => true,
-            'message' => 'Order created successfully',
-            'order_id' => $order_id,
-            'order_number' => $order_number
-        ]);
+        echo "SUCCESS:$order_id:$order_number";
         
     } catch (Exception $e) {
         // Rollback transaction on error
@@ -223,13 +216,10 @@ if ($action == 'process_payment') {
             $_db->rollback();
         }
         
-        echo json_encode([
-            'success' => false,
-            'message' => 'Failed to process order: ' . $e->getMessage()
-        ]);
+        echo "ERROR:Failed to process order: " . $e->getMessage();
     }
     
 } else {
-    echo json_encode(['success' => false, 'message' => 'Invalid action']);
+    echo "ERROR:Invalid action";
 }
 ?>
