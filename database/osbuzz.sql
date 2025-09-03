@@ -173,7 +173,7 @@ CREATE TABLE `password_resets` (
 
 CREATE TABLE `product` (
   `product_id` int(11) NOT NULL,
-  `product_name` varchar(100) NOT NULL,
+  `product_name` varchar(255) NOT NULL,
   `brand` varchar(50) NOT NULL,
   `category_id` int(11) DEFAULT NULL,
   `price` decimal(10,2) NOT NULL,

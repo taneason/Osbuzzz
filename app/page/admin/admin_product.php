@@ -100,7 +100,7 @@ include '../../head.php';
                     <img src="../../images/Products/<?= $photo_src ?>" 
                          alt="Product photo" 
                          style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; cursor: pointer;"
-                         onclick="openImageModal('../../images/Products/<?= $photo_src ?>', '<?= htmlspecialchars($product->product_name) ?>')">
+                         onclick='openImageModal("../../images/Products/<?= $photo_src ?>", "<?= htmlspecialchars($product->product_name) ?>")'>
                 </td>
                 <td><?= $product->product_id ?></td>
                 <td><?= htmlspecialchars($product->product_name) ?></td>
@@ -234,35 +234,7 @@ include '../../head.php';
 }
 </style>
 
-<script>
-function openImageModal(imageSrc, productName) {
-    const modal = document.getElementById('imageModal');
-    const modalImg = document.getElementById('modalImage');
-    const captionText = document.getElementById('modalCaption');
-    
-    modal.style.display = 'block';
-    modalImg.src = imageSrc;
-    captionText.innerHTML = productName;
-    
-    // 防止body滚动
-    document.body.style.overflow = 'hidden';
-}
 
-function closeImageModal() {
-    const modal = document.getElementById('imageModal');
-    modal.style.display = 'none';
-    
-    // 恢复body滚动
-    document.body.style.overflow = 'auto';
-}
-
-// ESC键关闭模态框
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        closeImageModal();
-    }
-});
-</script>
 
 <?php
 include '../../foot.php';

@@ -160,3 +160,30 @@ $(() => {
 
 
 });
+
+function openImageModal(imageSrc, productName) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    const captionText = document.getElementById('modalCaption');
+    
+    modal.style.display = 'block';
+    modalImg.src = imageSrc;
+    captionText.innerHTML = productName;
+    
+
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    modal.style.display = 'none';
+    
+ 
+    document.body.style.overflow = 'auto';
+}
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeImageModal();
+    }
+});

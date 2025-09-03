@@ -440,28 +440,7 @@ function updateCartCount() {
     .catch(error => console.error('Error updating cart count:', error));
 }
 
-function openImageModal(imageSrc, productName) {
-    const modal = document.getElementById('imageModal');
-    const modalImg = document.getElementById('modalImage');
-    
-    modal.style.display = 'block';
-    modalImg.src = imageSrc;
-    
-    document.body.style.overflow = 'hidden';
-}
 
-function closeImageModal() {
-    const modal = document.getElementById('imageModal');
-    modal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
-// ESC key to close modal
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        closeImageModal();
-    }
-});
 
 // Update quantity input validation
 document.getElementById('quantity').addEventListener('input', function() {

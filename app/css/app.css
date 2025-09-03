@@ -1710,7 +1710,7 @@ a {
     margin: auto;
     display: block;
     max-width: 90%;
-    max-height: 90%;
+    max-height: 80%;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -1733,6 +1733,34 @@ a {
 
 .image-modal-close:hover {
     color: #ccc;
+}
+
+.image-modal-caption {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    text-align: center;
+    color: white;
+    padding: 20px 0;
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 16px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+    padding: 10px 20px;
+}
+
+.image-modal-content,
+.image-modal-caption {
+    animation: zoom 0.3s ease;
+}
+
+@keyframes zoom {
+    from { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+    to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
 
 /* Responsive Design */

@@ -222,7 +222,7 @@ include '../../head.php';
             <!-- Product info -->
             <div class="admin-form-row admin-form-row-full">
                 <label><b>Name</b></label>
-                <?= html_text('product_name', "maxlength='100' placeholder='Product Name'"); ?>
+                <?= html_text('product_name', "maxlength='255' placeholder='Product Name'"); ?>
                 <?= err('product_name') ?>
             </div>
             <div class="admin-form-row">

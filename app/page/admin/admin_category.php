@@ -114,7 +114,8 @@ include '../../head.php';
                     <?php if ($category->banner_image): ?>
                     <img src="../../images/banners/<?= htmlspecialchars($category->banner_image) ?>" 
                          alt="Banner" 
-                         style="width: 60px; height: 30px; object-fit: cover; border-radius: 4px;">
+                         style="width: 60px; height: 30px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; cursor: pointer;"
+                         onclick='openImageModal(<?= json_encode("../../images/banners/" . $category->banner_image) ?>, <?= json_encode($category->category_name . " Banner") ?>)'>
                     <?php else: ?>
                     <span style="color: #999; font-size: 12px;">No banner</span>
                     <?php endif; ?>
@@ -163,7 +164,20 @@ include '../../head.php';
         </div>
         <?php endif; ?>
     </section>
+    
+    <!-- Image Modal -->
+    <div id="imageModal" class="image-modal" onclick="closeImageModal()">
+        <span class="image-modal-close" onclick="closeImageModal()">&times;</span>
+        <img class="image-modal-content" id="modalImage">
+        <div class="image-modal-caption" id="modalCaption"></div>
+    </div>
 </main>
+
+<style>
+
+</style>
+
+
 
 <?php
 include '../../foot.php';

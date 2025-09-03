@@ -145,12 +145,12 @@ include '../../head.php';
             <!-- Product info -->
             <div class="admin-form-row admin-form-row-full">
                 <label><b>Name</b></label>
-                <input type="text" name="product_name" placeholder="Name" value="<?= htmlspecialchars($_POST['product_name'] ?? '') ?>" />
+                <?= html_text('product_name', "maxlength='255' placeholder='Product Name'"); ?>
                 <?= err('product_name') ?>
             </div>
             <div class="admin-form-row">
                 <label><b>Brand</b></label>
-                <input type="text" name="brand" placeholder="Brand" value="<?= htmlspecialchars($_POST['brand'] ?? '') ?>" />
+                <?= html_text('brand', "maxlength='100' placeholder='Brand'"); ?>
                 <?= err('brand') ?>
             </div>
             <div class="admin-form-row">
@@ -165,11 +165,10 @@ include '../../head.php';
             </div>
             <div class="admin-form-row">
                 <label><b>Status</b></label>
-                <select name="status" class="admin-form-select">
-                    <option value="">-- Select Status --</option>
-                    <option value="active" <?= ($_POST['status'] ?? '') === 'active' ? 'selected' : '' ?>>Active (Visible to users)</option>
-                    <option value="inactive" <?= ($_POST['status'] ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive (Hidden from users)</option>
-                </select>
+                <?= html_select('status', [
+                    'active' => 'Active (Visible to users)',
+                    'inactive' => 'Inactive (Hidden from users)'
+                ], '-- Select Status --', "class='admin-form-select'"); ?>
                 <?= err('status') ?>
             </div>
             <div class="admin-form-row admin-form-row-full">

@@ -202,7 +202,8 @@ function html_radios($key, $items, $br = false) {
 
 // Generate <select>
 function html_select($key, $items, $default = '- Select One -', $attr = '') {
-    $value = encode($GLOBALS[$key] ?? '');
+    // Priority: $_POST (form submission) > $GLOBALS (existing data) > empty string
+    $value = encode($_POST[$key] ?? $GLOBALS[$key] ?? '');
     echo "<select id='$key' name='$key' $attr>";
     if ($default !== null) {
         echo "<option value=''>$default</option>";
