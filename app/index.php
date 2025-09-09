@@ -51,6 +51,37 @@ if (isset($_db)) {
         </div>
     </section>
 
+    <?php if ($_user): ?>
+    <!-- Loyalty Points Section -->
+    <section style="background: linear-gradient(135deg, #007cba, #0056b3); color: white; padding: 40px 20px; margin: 40px 0; text-align: center; border-radius: 10px;">
+        <h2 style="margin-bottom: 15px;">🎁 Your Loyalty Rewards</h2>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 30px; flex-wrap: wrap;">
+            <div>
+                <h3 style="font-size: 2.5em; margin: 0; color: #ffd700;"><?= $_user->loyalty_points ?? 0 ?></h3>
+                <p style="margin: 5px 0;">Points Available</p>
+            </div>
+            <div style="text-align: left;">
+                <p style="margin: 5px 0;">✨ Earn points with every purchase</p>
+                <p style="margin: 5px 0;">🎯 Redeem for discounts</p>
+                <p style="margin: 5px 0;">🎁 Welcome bonus received!</p>
+            </div>
+            <div>
+                <a href="/page/user/loyalty_history.php" style="background: #ffd700; color: #007cba; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">View History</a>
+            </div>
+        </div>
+    </section>
+    <?php else: ?>
+    <!-- Sign Up for Loyalty -->
+    <section style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 40px 20px; margin: 40px 0; text-align: center; border-radius: 10px;">
+        <h2 style="margin-bottom: 15px;">🎁 Join Our Loyalty Program</h2>
+        <p style="font-size: 1.1em; margin-bottom: 20px;">Sign up now and get <strong><?= get_loyalty_setting('signup_bonus_points', 100) ?> bonus points</strong> to start shopping!</p>
+        <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+            <a href="/page/user/signup.php" style="background: #ffd700; color: #28a745; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Sign Up Now</a>
+            <a href="/page/user/login.php" style="background: rgba(255,255,255,0.2); color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Login</a>
+        </div>
+    </section>
+    <?php endif; ?>
+
     <section class="shop-by-category-section">
         <h2 class="section-title">🛍️ Shop by Category</h2>
         <div class="featured-categories">

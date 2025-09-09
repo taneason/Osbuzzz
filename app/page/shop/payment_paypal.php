@@ -47,6 +47,12 @@ include '../../head.php';
                         <span>Tax:</span>
                         <span>RM<?= number_format($checkout_data['tax_amount'], 2) ?></span>
                     </div>
+                    <?php if (isset($checkout_data['loyalty_discount']) && $checkout_data['loyalty_discount'] > 0): ?>
+                    <div class="summary-row loyalty-discount" style="color: #28a745; background: #d4edda; padding: 8px; border-radius: 4px; margin: 5px 0;">
+                        <span>🎉 Loyalty Discount (-<?= number_format($checkout_data['points_used']) ?> points):</span>
+                        <span><strong>-RM<?= number_format($checkout_data['loyalty_discount'], 2) ?></strong></span>
+                    </div>
+                    <?php endif; ?>
                     <div class="summary-row total">
                         <span><strong>Total:</strong></span>
                         <span><strong>RM<?= number_format($checkout_data['grand_total'], 2) ?></strong></span>
@@ -96,25 +102,35 @@ include '../../head.php';
 // PayPal Button Configuration
 paypal.Buttons({
     createOrder: function(data, actions) {
+        // Build amount breakdown
+        var breakdown = {
+            item_total: {
+                currency_code: 'MYR',
+                value: '<?= number_format($checkout_data['subtotal'], 2, '.', '') ?>'
+            },
+            shipping: {
+                currency_code: 'MYR',
+                value: '<?= number_format($checkout_data['shipping_fee'], 2, '.', '') ?>'
+            },
+            tax_total: {
+                currency_code: 'MYR',
+                value: '<?= number_format($checkout_data['tax_amount'], 2, '.', '') ?>'
+            }
+        };
+        
+        <?php if (isset($checkout_data['loyalty_discount']) && $checkout_data['loyalty_discount'] > 0): ?>
+        breakdown.discount = {
+            currency_code: 'MYR',
+            value: '<?= number_format($checkout_data['loyalty_discount'], 2, '.', '') ?>'
+        };
+        <?php endif; ?>
+        
         return actions.order.create({
             purchase_units: [{
                 amount: {
                     value: '<?= number_format($checkout_data['grand_total'], 2, '.', '') ?>',
                     currency_code: 'MYR',
-                    breakdown: {
-                        item_total: {
-                            currency_code: 'MYR',
-                            value: '<?= number_format($checkout_data['subtotal'], 2, '.', '') ?>'
-                        },
-                        shipping: {
-                            currency_code: 'MYR',
-                            value: '<?= number_format($checkout_data['shipping_fee'], 2, '.', '') ?>'
-                        },
-                        tax_total: {
-                            currency_code: 'MYR',
-                            value: '<?= number_format($checkout_data['tax_amount'], 2, '.', '') ?>'
-                        }
-                    }
+                    breakdown: breakdown
                 },
                 description: 'Osbuzzz Shoe Order',
                 shipping: {

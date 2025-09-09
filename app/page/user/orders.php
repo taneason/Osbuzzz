@@ -52,6 +52,12 @@ include '../../head.php';
                                 <div class="order-summary">
                                     <p><strong><?= $order->item_count ?></strong> item(s)</p>
                                     <p><strong>Total: RM<?= number_format($order->grand_total, 2) ?></strong></p>
+                                    <?php if (isset($order->loyalty_points_used) && $order->loyalty_points_used > 0): ?>
+                                        <p style="color: #28a745; font-size: 0.9em;">
+                                            🎉 Used <?= number_format($order->loyalty_points_used) ?> points 
+                                            (RM<?= number_format($order->loyalty_discount, 2) ?> discount)
+                                        </p>
+                                    <?php endif; ?>
                                     <p>Payment: <?= ucfirst(str_replace('_', ' ', $order->payment_method)) ?></p>
                                 </div>
                                 

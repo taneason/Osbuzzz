@@ -344,7 +344,9 @@ if ($_user) {
             <a href="/page/admin/admin_product.php">Products</a>
             <a href="/page/admin/admin_category.php">Categories</a>
             <a href="/page/admin/admin_orders.php">Orders</a>
-            <a href="/page/admin/password_reset_management.php">Password Resets Requests</a>
+            <a href="/page/admin/cleanup_users.php">User Cleanup</a>
+            <a href="/page/admin/loyalty_settings.php">Loyalty Settings</a>
+            <a href="/page/admin/password_reset_management.php">Password Resets</a>
         <?php else: ?>
         <a href="/">Home</a>
         <a href="/page/shop/sales.php">Sales</a>

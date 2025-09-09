@@ -5,7 +5,7 @@ auth('Admin');
 // User table sorting
 $usort = $_GET['usort'] ?? 'id';
 $uorder = $_GET['uorder'] ?? 'asc';
-$uallowed = ['id','username','email','role','created_at'];
+$uallowed = ['id','username','email','role','created_at','loyalty_points'];
 if (!in_array($usort, $uallowed)) $usort = 'id';
 $uorder = strtolower($uorder) === 'desc' ? 'desc' : 'asc';
 
@@ -36,8 +36,14 @@ $totalPages = ceil($totalUsers / $limit);
 // Ensure page is within valid range
 if ($page > $totalPages && $totalPages > 0) $page = $totalPages;
 
-// Main query with pagination
-$sql = "SELECT * FROM user $where ORDER BY $usort $uorder LIMIT $limit OFFSET $offset";
+// Main query with pagination - include loyalty points calculation
+$sql = "SELECT u.*, COALESCE(SUM(lt.points), 0) as loyalty_points 
+        FROM user u 
+        LEFT JOIN loyalty_transactions lt ON u.id = lt.user_id 
+        $where 
+        GROUP BY u.id 
+        ORDER BY $usort $uorder 
+        LIMIT $limit OFFSET $offset";
 $stm = $_db->prepare($sql);
 $stm->execute($params);
 $users = $stm->fetchAll();
@@ -61,7 +67,9 @@ include '../../head.php';
                 <th><?= usort_link('id','ID',$usort,$uorder,$search,$page) ?></th>
                 <th><?= usort_link('username','Username',$usort,$uorder,$search,$page) ?></th>
                 <th><?= usort_link('email','Email',$usort,$uorder,$search,$page) ?></th>
+                <th>Email Verified</th>
                 <th><?= usort_link('role','Role',$usort,$uorder,$search,$page) ?></th>
+                <th><?= usort_link('loyalty_points','Loyalty Points',$usort,$uorder,$search,$page) ?></th>
                 <th><?= usort_link('created_at','Registration Date',$usort,$uorder,$search,$page) ?></th>
                 <th>Action</th>
             </tr>
@@ -70,7 +78,17 @@ include '../../head.php';
                 <td><?= $user->id ?></td>
                 <td><?= htmlspecialchars($user->username) ?></td>
                 <td><?= htmlspecialchars($user->email) ?></td>
+                <td>
+                    <?php if (isset($user->email_verified) && $user->email_verified == 1): ?>
+                        <span style="color: #28a745; font-weight: bold;">✓ Verified</span>
+                    <?php else: ?>
+                        <span style="color: #dc3545; font-weight: bold;">✗ Not Verified</span>
+                    <?php endif; ?>
+                </td>
                 <td><?= htmlspecialchars($user->role) ?></td>
+                <td>
+                    <span style="color: #007bff; font-weight: bold;"><?= number_format($user->loyalty_points, 2) ?> pts</span>
+                </td>
                 <td><?= date('Y-m-d H:i', strtotime($user->created_at)) ?></td>
                 <td>
                     <?php if($user->id !== $_user->id): ?>

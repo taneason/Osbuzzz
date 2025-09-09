@@ -152,6 +152,12 @@ include '../../head.php';
                         <span>Tax (6%):</span>
                         <span>RM<?= number_format($order->tax_amount, 2) ?></span>
                     </div>
+                    <?php if (isset($order->loyalty_points_used) && $order->loyalty_points_used > 0): ?>
+                    <div class="summary-row" style="color: #28a745; background: #d4edda; padding: 8px; border-radius: 4px; margin: 5px 0;">
+                        <span>🎉 Loyalty Discount (-<?= number_format($order->loyalty_points_used) ?> points):</span>
+                        <span><strong>-RM<?= number_format($order->loyalty_discount, 2) ?></strong></span>
+                    </div>
+                    <?php endif; ?>
                     <div class="summary-row total-row">
                         <span><strong>Total:</strong></span>
                         <span><strong>RM<?= number_format($order->grand_total, 2) ?></strong></span>

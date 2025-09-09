@@ -45,12 +45,34 @@ if (is_post()) {
     }*/ 
     
     if (!$err) {
-        $stm = $_db->prepare("UPDATE user SET email=?, photo=? WHERE id=?");
-        $stm->execute([$email, $photo, $user->id]);
-        $_user->email = $email;
-        $_user->photo = $photo;
-        temp('info', 'Profile updated!');
-        redirect('/page/user/profile.php');
+        // Check if email has changed
+        if ($email !== $user->email) {
+            // Email changed - require verification
+            $token = create_email_verification($user->id, $email, 'email_change');
+            if ($token) {
+                // Send verification email
+                if (send_verification_email($email, $token, 'email_change', $user->username)) {
+                    // Store the new email temporarily (not in main email field yet)
+                    $stm = $_db->prepare("UPDATE user SET photo=? WHERE id=?");
+                    $stm->execute([$photo, $user->id]);
+                    $_user->photo = $photo;
+                    
+                    temp('info', 'Verification email sent to your new email address. Please verify it within 5 minutes to complete the change.');
+                    redirect('/page/user/profile.php');
+                } else {
+                    $err['email'] = 'Failed to send verification email. Please try again.';
+                }
+            } else {
+                $err['email'] = 'Failed to create verification token. Please try again.';
+            }
+        } else {
+            // Email not changed - update only photo
+            $stm = $_db->prepare("UPDATE user SET photo=? WHERE id=?");
+            $stm->execute([$photo, $user->id]);
+            $_user->photo = $photo;
+            temp('info', 'Profile updated!');
+            redirect('/page/user/profile.php');
+        }
     }
 } else {
     $email = $user->email;

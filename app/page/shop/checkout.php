@@ -74,7 +74,34 @@ foreach ($cart_items as $item) {
 $shipping_fee = 10.00; // Fixed shipping fee (RM)
 $tax_rate = 0.06; // 6% tax
 $tax_amount = $subtotal * $tax_rate;
-$grand_total = $subtotal + $shipping_fee + $tax_amount;
+
+// Calculate loyalty points discount
+$loyalty_discount = 0;
+$points_used = 0;
+$use_loyalty_points = $_POST['use_loyalty_points'] ?? ($_GET['use_loyalty_points'] ?? '0');
+$requested_points = (int)($_POST['loyalty_points_amount'] ?? ($_GET['loyalty_points_amount'] ?? 0));
+
+if ($use_loyalty_points == '1' && $requested_points > 0) {
+    $max_discount_percentage = (int)get_loyalty_setting('maximum_discount_percentage', 50);
+    $points_to_ringgit_ratio = (int)get_loyalty_setting('points_to_ringgit_ratio', 100);
+    $minimum_points_redeem = (int)get_loyalty_setting('minimum_points_redeem', 100);
+    
+    // Calculate maximum allowed discount
+    $max_allowed_discount = ($subtotal + $tax_amount) * ($max_discount_percentage / 100);
+    
+    // Calculate discount from requested points
+    $discount_from_points = $requested_points / $points_to_ringgit_ratio;
+    
+    // Apply constraints
+    if ($requested_points >= $minimum_points_redeem && 
+        $requested_points <= $_user->loyalty_points && 
+        $discount_from_points <= $max_allowed_discount) {
+        $loyalty_discount = $discount_from_points;
+        $points_used = $requested_points;
+    }
+}
+
+$grand_total = $subtotal + $shipping_fee + $tax_amount - $loyalty_discount;
 
 // Get user's saved addresses
 $stm = $_db->prepare('SELECT * FROM customer_addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC');
@@ -100,6 +127,17 @@ $error_class_postal_code = '';
 $error_class_phone = '';
 
 if (is_post()) {
+    // Handle loyalty points calculation first
+    if (isset($_POST['calculate_discount'])) {
+        // Just recalculate and show the page with updated discount
+        // No need to process the full form, just redirect to show discount
+        $query_params = [
+            'use_loyalty_points' => $_POST['use_loyalty_points'] ?? '0',
+            'loyalty_points_amount' => $_POST['loyalty_points_amount'] ?? '0'
+        ];
+        redirect('checkout.php?' . http_build_query($query_params));
+    }
+    
     $use_saved_address = req('use_saved_address');
     
     if ($use_saved_address) {
@@ -197,6 +235,8 @@ if (is_post()) {
             'subtotal' => $subtotal,
             'shipping_fee' => $shipping_fee,
             'tax_amount' => $tax_amount,
+            'loyalty_discount' => $loyalty_discount,
+            'points_used' => $points_used,
             'grand_total' => $grand_total,
             'is_selective_checkout' => $is_selective_checkout,
             'cart_items' => $cart_items  // Save the actual cart items being checked out
@@ -224,13 +264,24 @@ include '../../head.php';
         
         <!-- Debug errors -->
         <?php if (!empty($_err)): ?>
-            <div style="color: red; background: #ffe6e6; padding: 10px; margin: 10px 0; border: 1px solid red;">
-                <strong>Errors:</strong>
-                <ul>
+            <div style="color: red; background: #ffe6e6; padding: 15px; margin: 15px 0; border: 1px solid red; border-radius: 5px;">
+                <strong>Please fix the following errors:</strong>
+                <ul style="margin: 10px 0; padding-left: 20px;">
                     <?php foreach ($_err as $key => $error): ?>
-                        <li><?= $key ?>: <?= encode($error) ?></li>
+                        <li><strong><?= ucfirst(str_replace('_', ' ', $key)) ?>:</strong> <?= encode($error) ?></li>
                     <?php endforeach; ?>
                 </ul>
+            </div>
+        <?php endif; ?>
+        
+        <!-- Debug POST data -->
+        <?php if (is_post() && !empty($_POST)): ?>
+            <div style="color: blue; background: #e6f3ff; padding: 10px; margin: 10px 0; border: 1px solid blue; border-radius: 5px; font-size: 12px;">
+                <strong>Form Data Received:</strong>
+                <pre><?php 
+                $debug_post = $_POST;
+                echo htmlspecialchars(print_r($debug_post, true)); 
+                ?></pre>
             </div>
         <?php endif; ?>
         
@@ -409,6 +460,67 @@ include '../../head.php';
                         <span>Tax (6%):</span>
                         <span>RM<?= number_format($tax_amount, 2) ?></span>
                     </div>
+                    
+                    <!-- Loyalty Points Section -->
+                    <div class="loyalty-points-section" style="border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px;">
+                        <div style="margin-bottom: 10px;">
+                            <strong>Available Points: <?= number_format($_user->loyalty_points) ?></strong>
+                            <small style="display: block; color: #666;">
+                                (≈ RM<?= number_format(calculate_discount_from_points($_user->loyalty_points), 2) ?> max discount)
+                            </small>
+                        </div>
+                        
+                        <?php if ($_user->loyalty_points >= get_loyalty_setting('minimum_points_redeem', 100)): ?>
+                            <div class="loyalty-points-input">
+                                <label>
+                                    <input type="checkbox" name="use_loyalty_points" value="1" id="useLoyaltyPoints" 
+                                           <?= $use_loyalty_points == '1' ? 'checked' : '' ?>>
+                                    Use Loyalty Points
+                                </label>
+                                <div id="loyaltyPointsAmount" style="margin-top: 10px; <?= $use_loyalty_points == '1' ? '' : 'display: none;' ?>">
+                                    <input type="number" name="loyalty_points_amount" 
+                                           min="<?= get_loyalty_setting('minimum_points_redeem', 100) ?>" 
+                                           max="<?= $_user->loyalty_points ?>" 
+                                           value="<?= $requested_points > 0 ? $requested_points : '' ?>"
+                                           placeholder="Enter points to use"
+                                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                                           id="loyaltyPointsInput">
+                                    <small style="color: #666; display: block; margin-top: 5px;">
+                                        Min: <?= number_format(get_loyalty_setting('minimum_points_redeem', 100)) ?> points | 
+                                        Max discount: <?= get_loyalty_setting('maximum_discount_percentage', 50) ?>% of order
+                                    </small>
+                                    <button type="button" onclick="calculateLoyaltyDiscount()" style="margin-top: 10px; padding: 6px 12px; background: #007cba; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                        Calculate Discount
+                                    </button>
+                                </div>
+                            </div>
+                        <?php else: ?>
+                            <p style="color: #666; font-size: 0.9em;">
+                                Need <?= number_format(get_loyalty_setting('minimum_points_redeem', 100)) ?> points minimum to redeem
+                            </p>
+                        <?php endif; ?>
+                        
+                        <?php if ($loyalty_discount > 0): ?>
+                            <div class="total-row" style="color: #28a745; background: #d4edda; padding: 8px; border-radius: 4px; margin: 5px 0;">
+                                <span>🎉 Loyalty Discount (-<?= number_format($points_used) ?> points):</span>
+                                <span><strong>-RM<?= number_format($loyalty_discount, 2) ?></strong></span>
+                            </div>
+                        <?php elseif ($use_loyalty_points == '1' && $requested_points > 0): ?>
+                            <div class="total-row" style="color: #dc3545; background: #f8d7da; padding: 8px; border-radius: 4px; margin: 5px 0;">
+                                <span>⚠️ Points not applied:</span>
+                                <span style="font-size: 0.9em;">
+                                    <?php if ($requested_points < get_loyalty_setting('minimum_points_redeem', 100)): ?>
+                                        Minimum <?= get_loyalty_setting('minimum_points_redeem', 100) ?> points required
+                                    <?php elseif ($requested_points > $_user->loyalty_points): ?>
+                                        Insufficient points (you have <?= $_user->loyalty_points ?>)
+                                    <?php else: ?>
+                                        Exceeds maximum discount allowed
+                                    <?php endif; ?>
+                                </span>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    
                     <div class="total-row total-grand">
                         <span><strong>Total:</strong></span>
                         <span><strong>RM<?= number_format($grand_total, 2) ?></strong></span>
@@ -830,7 +942,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedPayment = document.querySelector('input[name="payment_method"]:checked');
         console.log('Selected payment method:', selectedPayment ? selectedPayment.value : 'none');
         
+        // Check if payment method is selected
+        if (!selectedPayment) {
+            e.preventDefault();
+            alert('Please select a payment method');
+            return false;
+        }
+        
         const selectedAddress = document.querySelector('input[name="selected_address"]:checked');
+        
+        // Remove any existing use_saved_address hidden inputs to avoid duplicates
+        const existingInputs = this.querySelectorAll('input[name="use_saved_address"]');
+        existingInputs.forEach(input => input.remove());
         
         if (selectedAddress && selectedAddress.value !== 'new') {
             // If using saved address, populate hidden fields with address data
@@ -843,7 +966,33 @@ document.addEventListener('DOMContentLoaded', function() {
             hiddenInput.value = addressId;
             
             this.appendChild(hiddenInput);
+            console.log('Using saved address:', addressId);
+        } else {
+            console.log('Using new address form');
+            
+            // Validate required fields for new address
+            const requiredFields = ['first_name', 'last_name', 'address_line_1', 'city', 'state', 'postal_code', 'phone'];
+            let hasErrors = false;
+            
+            for (const fieldName of requiredFields) {
+                const field = this.querySelector(`[name="${fieldName}"]`);
+                if (field && !field.value.trim()) {
+                    hasErrors = true;
+                    field.style.borderColor = '#dc3545';
+                    // Remove existing error styling after 3 seconds
+                    setTimeout(() => {
+                        field.style.borderColor = '';
+                    }, 3000);
+                }
+            }
+            
+            if (hasErrors) {
+                e.preventDefault();
+                alert('Please fill in all required fields');
+                return false;
+            }
         }
+        
     });
     
     // Add payment method change listeners for debugging
@@ -853,7 +1002,56 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Payment method changed to:', this.value);
         });
     });
+    
+    // Handle loyalty points checkbox
+    const loyaltyCheckbox = document.getElementById('useLoyaltyPoints');
+    const loyaltyAmountDiv = document.getElementById('loyaltyPointsAmount');
+    
+    if (loyaltyCheckbox && loyaltyAmountDiv) {
+        loyaltyCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                loyaltyAmountDiv.style.display = 'block';
+            } else {
+                loyaltyAmountDiv.style.display = 'none';
+                // Clear the discount when unchecked
+                clearLoyaltyDiscount();
+            }
+        });
+    }
 });
+
+function clearLoyaltyDiscount() {
+    const currentUrl = new URL(window.location);
+    currentUrl.searchParams.delete('use_loyalty_points');
+    currentUrl.searchParams.delete('loyalty_points_amount');
+    currentUrl.searchParams.delete('calculate_discount');
+    window.location.href = currentUrl.toString();
+}
+
+function calculateLoyaltyDiscount() {
+    const pointsInput = document.getElementById('loyaltyPointsInput');
+    const points = parseInt(pointsInput.value) || 0;
+    
+    const minPoints = <?= get_loyalty_setting('minimum_points_redeem', 100) ?>;
+    const userPoints = <?= $_user ? $_user->loyalty_points : 0 ?>;
+    
+    if (points < minPoints) {
+        alert('Minimum points required: ' + minPoints.toLocaleString());
+        return;
+    }
+    
+    if (points > userPoints) {
+        alert('You only have ' + userPoints.toLocaleString() + ' points available');
+        return;
+    }
+    
+    // Redirect with discount calculation parameters
+    const currentUrl = new URL(window.location);
+    currentUrl.searchParams.set('use_loyalty_points', '1');
+    currentUrl.searchParams.set('loyalty_points_amount', points);
+    currentUrl.searchParams.set('calculate_discount', '1');
+    window.location.href = currentUrl.toString();
+}
 </script>
 
 <?php

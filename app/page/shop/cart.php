@@ -169,6 +169,18 @@ include '../../head.php';
                         <span id="selected-total">RM0.00</span>
                     </div>
                     
+                    <!-- Loyalty Points Info -->
+                    <div class="loyalty-info" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <h4 style="margin: 0 0 10px 0; color: #007cba;">💎 Your Loyalty Points</h4>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong><?= number_format($_user->loyalty_points) ?> points</strong><br>
+                                <small style="color: #666;">≈ RM<?= number_format(calculate_discount_from_points($_user->loyalty_points), 2) ?> discount value</small>
+                            </div>
+                            <a href="/page/user/loyalty_history.php" style="color: #007cba; text-decoration: none; font-size: 0.9em;">View History →</a>
+                        </div>
+                    </div>
+                    
                     <!-- Action Buttons -->
                     <div class="cart-actions">
                         <button type="submit" class="btn btn-primary checkout-btn" id="checkout-selected" disabled>

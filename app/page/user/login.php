@@ -1,5 +1,9 @@
 <?php
 require '../../base.php';
+
+// Auto cleanup expired unverified users (runs randomly)
+auto_cleanup_expired_users();
+
 $error_class_login='';
 $error_class_password='';
 if (is_post()) {
@@ -45,12 +49,19 @@ if (is_post()) {
             $u = $stm->fetch();
         }
         if ($u) {
+            // Check if email is verified
+            if (isset($u->email_verified) && $u->email_verified == 0) {
+                $_err['password'] = 'Please verify your email address before logging in. Check your email for the verification link.';
+                $error_class_login='class ="error"';
+                $error_class_password='class ="error"';
+            }
             // Check if user is banned
-            if (isset($u->status) && $u->status === 'banned') {
+            else if (isset($u->status) && $u->status === 'banned') {
                 $_err['password'] = 'Your account has been banned.';
                 $error_class_login='class ="error"';
                 $error_class_password='class ="error"';
-            } else {
+            } 
+            else {
                 temp('info', 'Login successfully');
                 login($u);
             }
@@ -85,6 +96,7 @@ include '../../signuphead.php';
                     </div>
 
                     <div class="forgot">
+                        <br>
                         <a href="/page/user/forgot_password.php">Forgot password?</a>
                     </div>
 

@@ -738,7 +738,18 @@ function send_order_confirmation_email($order_id) {
                         <tr class='total-row'>
                             <td colspan='2' style='padding: 15px 10px; text-align: right;'>Tax:</td>
                             <td style='padding: 15px 10px; text-align: right;'>RM" . number_format($order->tax_amount, 2) . "</td>
-                        </tr>
+                        </tr>";
+        
+        // Add loyalty discount row if used
+        if (isset($order->loyalty_points_used) && $order->loyalty_points_used > 0) {
+            $items_html .= "
+                        <tr style='color: #28a745; background: #d4edda;'>
+                            <td colspan='2' style='padding: 15px 10px; text-align: right;'>🎉 Loyalty Discount (-" . number_format($order->loyalty_points_used) . " points):</td>
+                            <td style='padding: 15px 10px; text-align: right; font-weight: bold;'>-RM" . number_format($order->loyalty_discount, 2) . "</td>
+                        </tr>";
+        }
+        
+        $items_html .= "
                         <tr class='grand-total'>
                             <td colspan='2' style='padding: 15px 10px; text-align: right;'>Grand Total:</td>
                             <td style='padding: 15px 10px; text-align: right;'>RM" . number_format($order->grand_total, 2) . "</td>
@@ -1192,4 +1203,332 @@ function format_malaysian_phone($phone) {
     
     // Return original if no pattern matches
     return $phone;
+}
+
+// ============================================================================
+// LOYALTY POINTS SYSTEM
+// ============================================================================
+
+// Get loyalty settings
+function get_loyalty_setting($key, $default = null) {
+    global $_db;
+    $stm = $_db->prepare('SELECT setting_value FROM loyalty_settings WHERE setting_key = ?');
+    $stm->execute([$key]);
+    $result = $stm->fetchColumn();
+    return $result !== false ? $result : $default;
+}
+
+// Calculate points earned from purchase amount
+function calculate_points_earned($amount) {
+    $points_per_ringgit = (int)get_loyalty_setting('points_per_ringgit', 1);
+    return floor($amount * $points_per_ringgit);
+}
+
+// Calculate discount from points
+function calculate_discount_from_points($points) {
+    $ratio = (int)get_loyalty_setting('points_to_ringgit_ratio', 100);
+    return floor($points / $ratio);
+}
+
+// Get user's current loyalty points
+function get_user_loyalty_points($user_id) {
+    global $_db;
+    $stm = $_db->prepare('SELECT loyalty_points FROM user WHERE id = ?');
+    $stm->execute([$user_id]);
+    return (int)$stm->fetchColumn();
+}
+
+// Add loyalty transaction and update user balance
+function add_loyalty_transaction($user_id, $points, $type, $description, $order_id = null) {
+    global $_db;
+    
+    try {
+        // Check if we're already in a transaction
+        $in_transaction = $_db->inTransaction();
+        
+        if (!$in_transaction) {
+            $_db->beginTransaction();
+        }
+        
+        // Insert transaction record
+        $stm = $_db->prepare('INSERT INTO loyalty_transactions (user_id, order_id, points, transaction_type, description) VALUES (?, ?, ?, ?, ?)');
+        $stm->execute([$user_id, $order_id, $points, $type, $description]);
+        
+        // Update user's loyalty points balance
+        $stm = $_db->prepare('UPDATE user SET loyalty_points = loyalty_points + ? WHERE id = ?');
+        $stm->execute([$points, $user_id]);
+        
+        if (!$in_transaction) {
+            $_db->commit();
+        }
+        return true;
+    } catch (Exception $e) {
+        if (!$in_transaction && $_db->inTransaction()) {
+            $_db->rollBack();
+        }
+        return false;
+    }
+}
+
+// Validate points redemption
+function validate_points_redemption($user_id, $points_to_redeem, $order_total) {
+    $user_points = get_user_loyalty_points($user_id);
+    $min_points = (int)get_loyalty_setting('minimum_points_redeem', 100);
+    $max_discount_percent = (int)get_loyalty_setting('maximum_discount_percentage', 50);
+    
+    $errors = [];
+    
+    if ($points_to_redeem < $min_points) {
+        $errors[] = "Minimum $min_points points required for redemption";
+    }
+    
+    if ($points_to_redeem > $user_points) {
+        $errors[] = "Insufficient points. You have $user_points points";
+    }
+    
+    $discount = calculate_discount_from_points($points_to_redeem);
+    $max_discount = ($order_total * $max_discount_percent) / 100;
+    
+    if ($discount > $max_discount) {
+        $errors[] = "Maximum discount is $max_discount_percent% of order total";
+    }
+    
+    return empty($errors) ? true : $errors;
+}
+
+// ============================================================================
+// EMAIL VERIFICATION SYSTEM
+// ============================================================================
+
+// Generate verification token
+function generate_verification_token() {
+    return bin2hex(random_bytes(32));
+}
+
+// Send verification email
+function send_verification_email($email, $token, $type = 'registration', $username = '') {
+    $verification_url = get_base_url() . "/page/user/verify_email.php?token=" . urlencode($token);
+
+    $subject = $type === 'registration' ? 'Verify Your Email - Osbuzzz' : 'Verify Your New Email - Osbuzzz';
+
+    $message = "
+    <html>
+    <head>
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #007cba; color: white; padding: 20px; text-align: center; }
+            .content { padding: 20px; background: #f9f9f9; }
+            .button { display: inline-block; background: #007cba; color: white; padding: 12px 24px; 
+                     text-decoration: none; border-radius: 5px; margin: 20px 0; }
+            .footer { padding: 20px; font-size: 12px; color: #666; text-align: center; }
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='header'>
+                <h1>Osbuzzz Email Verification</h1>
+            </div>
+            <div class='content'>
+                <h2>Hello " . htmlspecialchars($username ?: 'User') . "!</h2>
+                <p>Thank you for " . ($type === 'registration' ? 'registering with' : 'updating your email on') . " Osbuzzz.</p>
+                <p>Please click the button below to verify your email address:</p>
+                <p><a href='$verification_url' class='button'>Verify Email Address</a></p>
+                <p>Or copy and paste this link into your browser:</p>
+                <p><small>$verification_url</small></p>
+                <p><strong>This link will expire in 5 minutes.</strong></p>
+                <p>If you didn't request this verification, please ignore this email.</p>
+            </div>
+            <div class='footer'>
+                <p>&copy; " . date('Y') . " Osbuzzz. All rights reserved.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    ";
+    
+    try {
+        $mail = get_mail();
+        $mail->addAddress($email, $username);
+        $mail->isHTML(true);
+        $mail->Subject = $subject;
+        $mail->Body = $message;
+        
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log("Email verification sending failed: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Create email verification record
+function create_email_verification($user_id, $email, $type = 'registration') {
+    global $_db;
+    
+    $token = generate_verification_token();
+    $expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    
+    try {
+        // Clean up any existing tokens for this user and type
+        $stm = $_db->prepare('DELETE FROM email_verification_logs WHERE user_id = ? AND action_type = ? AND verified_at IS NULL');
+        $stm->execute([$user_id, $type]);
+        
+        // Insert new verification record
+        $stm = $_db->prepare('INSERT INTO email_verification_logs (user_id, email, token, action_type, expires_at, ip_address) VALUES (?, ?, ?, ?, ?, ?)');
+        $stm->execute([$user_id, $email, $token, $type, $expires, $ip]);
+        
+        return $token;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+// Verify email token
+function verify_email_token($token) {
+    global $_db;
+    
+    $stm = $_db->prepare('
+        SELECT evl.*, u.username 
+        FROM email_verification_logs evl 
+        JOIN user u ON evl.user_id = u.id 
+        WHERE evl.token = ? AND evl.verified_at IS NULL AND evl.expires_at > NOW()
+    ');
+    $stm->execute([$token]);
+    $verification = $stm->fetch();
+    
+    if (!$verification) {
+        return ['success' => false, 'message' => 'Invalid or expired verification token'];
+    }
+    
+    try {
+        $_db->beginTransaction();
+        
+        // Mark verification as completed
+        $stm = $_db->prepare('UPDATE email_verification_logs SET verified_at = NOW() WHERE log_id = ?');
+        $stm->execute([$verification->log_id]);
+        
+        if ($verification->action_type === 'registration') {
+            // For registration verification
+            $stm = $_db->prepare('UPDATE user SET email_verified = 1 WHERE id = ?');
+            $stm->execute([$verification->user_id]);
+            
+            // Award signup bonus points
+            $signup_bonus = (int)get_loyalty_setting('signup_bonus_points', 100);
+            if ($signup_bonus > 0) {
+                add_loyalty_transaction($verification->user_id, $signup_bonus, 'bonus', 'Email verification bonus');
+            }
+            
+        } else if ($verification->action_type === 'email_change') {
+            // For email change verification - update the user's email directly
+            $stm = $_db->prepare('UPDATE user SET email = ? WHERE id = ?');
+            $stm->execute([$verification->email, $verification->user_id]);
+            
+            // Update session if this is the current user
+            global $_user;
+            if ($_user && $_user->id == $verification->user_id) {
+                refresh_user_session($verification->user_id);
+            }
+        }
+        
+        $_db->commit();
+        return ['success' => true, 'message' => 'Email verified successfully!', 'type' => $verification->action_type];
+        
+    } catch (Exception $e) {
+        $_db->rollBack();
+        return ['success' => false, 'message' => 'Verification failed. Please try again.'];
+    }
+}
+
+// Refresh user session data from database
+function refresh_user_session($user_id) {
+    global $_db, $_user;
+    
+    $stm = $_db->prepare('SELECT * FROM user WHERE id = ?');
+    $stm->execute([$user_id]);
+    $updated_user = $stm->fetch();
+    
+    if ($updated_user) {
+        $_SESSION['user'] = $updated_user;
+        $_user = $updated_user;
+    }
+}
+
+// Check if email verification is required
+function is_email_verification_required() {
+    // Email verification is always required for loyalty points system
+    return true;
+}
+
+// Get base URL for email links
+function get_base_url() {
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $script_name = dirname($_SERVER['SCRIPT_NAME']);
+    $base_path = rtrim(str_replace('\\', '/', $script_name), '/');
+    
+    // Remove '/page' and other deep paths to get to the app root
+    $base_path = preg_replace('#/page.*#', '', $base_path);
+    
+    return $protocol . $host . $base_path;
+}
+
+// Cleanup expired unverified users
+function cleanup_expired_unverified_users() {
+    global $_db;
+    
+    try {
+        // Start transaction
+        $_db->beginTransaction();
+        
+        // Find users whose email verification has expired
+        $stm = $_db->prepare('
+            SELECT DISTINCT u.id, u.email, u.username 
+            FROM user u
+            INNER JOIN email_verification_logs evl ON u.id = evl.user_id 
+            WHERE u.email_verified = 0 
+            AND evl.expires_at < NOW()
+            AND evl.verified_at IS NULL
+        ');
+        $stm->execute();
+        $expired_users = $stm->fetchAll();
+        
+        if ($expired_users) {
+            foreach ($expired_users as $user) {
+                // Delete loyalty transactions for this user
+                $stm = $_db->prepare('DELETE FROM loyalty_transactions WHERE user_id = ?');
+                $stm->execute([$user->id]);
+                
+                // Delete email verification logs for this user
+                $stm = $_db->prepare('DELETE FROM email_verification_logs WHERE user_id = ?');
+                $stm->execute([$user->id]);
+                
+                // Delete the user
+                $stm = $_db->prepare('DELETE FROM user WHERE id = ?');
+                $stm->execute([$user->id]);
+                
+                // Log the cleanup action
+                error_log("Cleaned up expired unverified user: {$user->email} (ID: {$user->id})");
+            }
+        }
+        
+        // Also cleanup old expired verification logs (even for verified users)
+        $stm = $_db->prepare('DELETE FROM email_verification_logs WHERE expires_at < DATE_SUB(NOW(), INTERVAL 7 DAY)');
+        $stm->execute();
+        
+        $_db->commit();
+        return count($expired_users);
+        
+    } catch (Exception $e) {
+        $_db->rollback();
+        error_log("Error cleaning up expired users: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Auto cleanup function that can be called on login/registration pages
+function auto_cleanup_expired_users() {
+    // Run cleanup every time (100% chance)
+    cleanup_expired_unverified_users();
 }

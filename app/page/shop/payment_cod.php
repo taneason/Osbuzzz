@@ -69,10 +69,14 @@ try {
     $stm = $_db->prepare('
         INSERT INTO orders (
             user_id, order_number, total_amount, shipping_fee, tax_amount, grand_total,
+            loyalty_points_used, loyalty_discount,
             order_status, payment_status, payment_method, payment_id,
             shipping_address, customer_notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ');
+    
+    $loyalty_points_used = $checkout_data['points_used'] ?? 0;
+    $loyalty_discount = $checkout_data['loyalty_discount'] ?? 0.00;
     
     $stm->execute([
         $_user->id,
@@ -81,6 +85,8 @@ try {
         $checkout_data['shipping_fee'],
         $checkout_data['tax_amount'],
         $checkout_data['grand_total'],
+        $loyalty_points_used,
+        $loyalty_discount,
         'pending',
         'pending',
         'cash_on_delivery',
@@ -90,6 +96,67 @@ try {
     ]);
     
     $order_id = $_db->lastInsertId();
+    
+    // Process loyalty points if used (with correct fields)
+    if ($loyalty_points_used > 0) {
+        // Deduct used points from user account
+        $stm_deduct = $_db->prepare('UPDATE user SET loyalty_points = loyalty_points - ? WHERE id = ?');
+        $stm_deduct->execute([$loyalty_points_used, $_user->id]);
+        
+        // Record loyalty transaction with correct field names
+        $stm_transaction = $_db->prepare('
+            INSERT INTO loyalty_transactions (user_id, order_id, points, transaction_type, description, created_at) 
+            VALUES (?, ?, ?, ?, ?, NOW())
+        ');
+        $stm_transaction->execute([
+            $_user->id, 
+            $order_id,
+            -$loyalty_points_used, 
+            'redeemed', 
+            "Points used for order #$order_number"
+        ]);
+    }
+    
+    // Award loyalty points for purchase
+    // Get points earning rate from settings
+    $points_stmt = $_db->prepare('SELECT setting_value FROM loyalty_settings WHERE setting_key = ?');
+    $points_stmt->execute(['points_per_ringgit']);
+    $points_per_ringgit = $points_stmt->fetchColumn() ?: 1; // Default to 1 if not found
+    
+    $points_to_award = floor($checkout_data['grand_total'] * $points_per_ringgit);
+    
+    if ($points_to_award > 0) {
+        // Award points after successful order
+        $stm_award = $_db->prepare('UPDATE user SET loyalty_points = loyalty_points + ? WHERE id = ?');
+        $stm_award->execute([$points_to_award, $_user->id]);
+        
+        // Record loyalty transaction for points earned
+        $stm_earn = $_db->prepare('
+            INSERT INTO loyalty_transactions (user_id, order_id, points, transaction_type, description, created_at) 
+            VALUES (?, ?, ?, ?, ?, NOW())
+        ');
+        $stm_earn->execute([
+            $_user->id, 
+            $order_id,
+            $points_to_award, 
+            'earned', 
+            "Points earned from order #$order_number"
+        ]);
+    }
+    
+    // Update user session with new loyalty points balance
+    if ($loyalty_points_used > 0 || $points_to_award > 0) {
+        // Get updated user data from database
+        $stm_user = $_db->prepare('SELECT * FROM user WHERE id = ?');
+        $stm_user->execute([$_user->id]);
+        $updated_user = $stm_user->fetch();
+        
+        if ($updated_user) {
+            // Update session with new loyalty points
+            $_SESSION['user'] = $updated_user;
+            $_user = $updated_user; // Update global variable too
+        }
+    }
     
     // Create order items
     $stm_item = $_db->prepare('

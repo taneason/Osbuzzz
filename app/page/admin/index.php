@@ -259,6 +259,11 @@ include '../../head.php';
                     <div class="action-title">Password Reset Management</div>
                     <div class="action-desc">View and manage password reset requests</div>
                 </a>
+
+                <a href="cleanup_users.php" class="action-btn">
+                    <div class="action-title">User Cleanup Management</div>
+                    <div class="action-desc">Clean up expired unverified users</div>
+                </a>
             </div>
         </div>
     </div>

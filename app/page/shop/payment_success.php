@@ -38,6 +38,15 @@ $stm = $_db->prepare('
 $stm->execute([$order_id]);
 $order_items = $stm->fetchAll();
 
+// Get loyalty transactions related to this order
+$stm = $_db->prepare('
+    SELECT * FROM loyalty_transactions 
+    WHERE order_id = ? AND user_id = ?
+    ORDER BY created_at ASC
+');
+$stm->execute([$order_id, $_user->id]);
+$loyalty_transactions = $stm->fetchAll();
+
 $_title = 'Order Confirmation';
 include '../../head.php';
 ?>
@@ -113,11 +122,39 @@ include '../../head.php';
                         <span>Tax:</span>
                         <span>RM<?= number_format($order->tax_amount, 2) ?></span>
                     </div>
+                    <?php if (isset($order->loyalty_points_used) && $order->loyalty_points_used > 0): ?>
+                    <div class="total-row loyalty-discount" style="color: #28a745; background: #d4edda; padding: 8px; border-radius: 4px; margin: 5px 0;">
+                        <span>🎉 Loyalty Discount (-<?= number_format($order->loyalty_points_used) ?> points):</span>
+                        <span><strong>-RM<?= number_format($order->loyalty_discount, 2) ?></strong></span>
+                    </div>
+                    <?php endif; ?>
                     <div class="total-row total-grand">
                         <span><strong>Total:</strong></span>
                         <span><strong>RM<?= number_format($order->grand_total, 2) ?></strong></span>
                     </div>
                 </div>
+                
+                <!-- Loyalty Points Transactions -->
+                <?php if (!empty($loyalty_transactions)): ?>
+                <div class="loyalty-transactions" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <h3 style="margin: 0 0 15px 0; color: #007cba;">💎 Loyalty Points Activity</h3>
+                    <?php foreach ($loyalty_transactions as $transaction): ?>
+                        <div class="loyalty-transaction" style="display: flex; justify-content: space-between; margin-bottom: 8px; padding: 8px 0; border-bottom: 1px solid #e9ecef;">
+                            <span style="color: #666;">
+                                <?= htmlspecialchars($transaction->description) ?>
+                            </span>
+                            <span style="font-weight: bold; color: <?= $transaction->points > 0 ? '#28a745' : '#dc3545' ?>;">
+                                <?= $transaction->points > 0 ? '+' : '' ?><?= number_format($transaction->points) ?> points
+                            </span>
+                        </div>
+                    <?php endforeach; ?>
+                    <div style="margin-top: 10px; padding-top: 10px; border-top: 2px solid #007cba;">
+                        <strong style="color: #007cba;">
+                            Current Balance: <?= number_format($_user->loyalty_points) ?> points
+                        </strong>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
             
             <div class="shipping-info-card">

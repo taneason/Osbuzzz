@@ -1,6 +1,9 @@
 <?php
 require '../../base.php';
 
+// Auto cleanup expired unverified users (runs randomly)
+auto_cleanup_expired_users();
+
 $email = $_SESSION['email'];
 if (!$email) {
     redirect('/page/user/signup.php');
@@ -51,13 +54,52 @@ if (is_post()) {
     }
 
     if (!$_err){
-        $stm = $_db->prepare('INSERT INTO user
-                              (email, password, username, photo, created_at)
-                              VALUES(?, SHA1(?), ?, "", NOW())');
-        $stm->execute([$email, $password, $username]);
-        temp('info', 'Register Successful');
-        redirect('login.php');
-        
+        try {
+            $_db->beginTransaction();
+            
+            // Insert user
+            $stm = $_db->prepare('INSERT INTO user
+                                  (email, password, username, photo, created_at, email_verified)
+                                  VALUES(?, SHA1(?), ?, "", NOW(), ?)');
+            
+            $email_verification_required = is_email_verification_required();
+            $email_verified = $email_verification_required ? 0 : 1;
+            
+            $stm->execute([$email, $password, $username, $email_verified]);
+            $user_id = $_db->lastInsertId();
+            
+            if ($email_verification_required) {
+                // Create email verification
+                $token = create_email_verification($user_id, $email, 'registration');
+                if ($token) {
+                    // Send verification email
+                    $email_sent = send_verification_email($email, $token, 'registration', $username);
+                    if (!$email_sent) {
+                        throw new Exception('Failed to send verification email');
+                    }
+                }
+            } else {
+                // If email verification not required, award points immediately
+                $signup_bonus = (int)get_loyalty_setting('signup_bonus_points', 100);
+                if ($signup_bonus > 0) {
+                    add_loyalty_transaction($user_id, $signup_bonus, 'bonus', 'Welcome bonus');
+                }
+            }
+            
+            $_db->commit();
+            
+            if ($email_verification_required) {
+                temp('info', 'Registration successful! Please check your email to verify your account.');
+                redirect('/page/user/signup_success.php');
+            } else {
+                temp('info', 'Registration successful! Welcome to OSBuzz!');
+                redirect('login.php');
+            }
+            
+        } catch (Exception $e) {
+            $_db->rollBack();
+            $_err['general'] = 'Registration failed: ' . $e->getMessage();
+        }
     }
 }
 

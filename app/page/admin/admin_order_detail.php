@@ -116,6 +116,15 @@ $stm = $_db->prepare('
 $stm->execute([$order_id]);
 $order_items = $stm->fetchAll();
 
+// Get loyalty transactions for this order
+$stm = $_db->prepare('
+    SELECT * FROM loyalty_transactions 
+    WHERE order_id = ? 
+    ORDER BY created_at ASC
+');
+$stm->execute([$order_id]);
+$loyalty_transactions = $stm->fetchAll();
+
 // Get status history
 $stm = $_db->prepare('
     SELECT h.*, u.username as changed_by_name
@@ -199,6 +208,15 @@ include '../../head.php';
                         <label>Tax:</label>
                         <value>RM<?= number_format($order->tax_amount, 2) ?></value>
                     </div>
+                    <?php if (isset($order->loyalty_points_used) && $order->loyalty_points_used > 0): ?>
+                    <div class="detail-item loyalty-discount" style="background: #d4edda; border-left: 4px solid #28a745; padding: 10px; margin: 5px 0;">
+                        <label style="color: #155724;">🎉 Loyalty Points Used:</label>
+                        <value style="color: #155724; font-weight: bold;">
+                            <?= number_format($order->loyalty_points_used) ?> points 
+                            (-RM<?= number_format($order->loyalty_discount, 2) ?>)
+                        </value>
+                    </div>
+                    <?php endif; ?>
                     <div class="detail-item total">
                         <label>Grand Total:</label>
                         <value>RM<?= number_format($order->grand_total, 2) ?></value>
@@ -270,6 +288,52 @@ include '../../head.php';
                 </table>
             </div>
         </div>
+
+        <!-- Loyalty Points Transactions -->
+        <?php if (!empty($loyalty_transactions)): ?>
+        <div class="detail-card full-width">
+            <h3>🎁 Loyalty Points Transactions</h3>
+            <div class="loyalty-transactions">
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Points</th>
+                            <th>Description</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($loyalty_transactions as $transaction): ?>
+                            <tr>
+                                <td>
+                                    <span class="loyalty-badge loyalty-<?= $transaction->transaction_type ?>">
+                                        <?php
+                                        $type_labels = [
+                                            'earned' => '💰 Earned',
+                                            'redeemed' => '🎉 Redeemed', 
+                                            'refund' => '↩️ Refunded',
+                                            'expired' => '❌ Expired',
+                                            'bonus' => '🎁 Bonus'
+                                        ];
+                                        echo $type_labels[$transaction->transaction_type] ?? ucfirst($transaction->transaction_type);
+                                        ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="points-amount <?= $transaction->points > 0 ? 'positive' : 'negative' ?>">
+                                        <?= $transaction->points > 0 ? '+' : '' ?><?= number_format($transaction->points) ?>
+                                    </span>
+                                </td>
+                                <td><?= encode($transaction->description) ?></td>
+                                <td><?= date('M d, Y g:i A', strtotime($transaction->created_at)) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <?php endif; ?>
 
         <!-- Status History -->
         <div class="detail-card full-width">
@@ -810,6 +874,62 @@ include '../../head.php';
         align-items: flex-start;
         gap: 5px;
     }
+}
+
+/* Loyalty Points Styles */
+.loyalty-transactions {
+    margin-top: 10px;
+}
+
+.loyalty-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.loyalty-earned {
+    background: #d4edda;
+    color: #155724;
+}
+
+.loyalty-redeemed {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.loyalty-refund {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.loyalty-expired {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.loyalty-bonus {
+    background: #e7e3ff;
+    color: #6f42c1;
+}
+
+.points-amount {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.points-amount.positive {
+    color: #28a745;
+}
+
+.points-amount.negative {
+    color: #dc3545;
+}
+
+.loyalty-discount {
+    border-radius: 6px;
+    margin: 8px 0;
 }
 </style>
 

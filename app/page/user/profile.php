@@ -10,7 +10,9 @@ if(is_get()){
         redirect('/');
     }
 
-    extract((array) $u);
+    // Update session with latest data
+    $_SESSION['user'] = $u;
+    $_user = $u;
     $_SESSION['photo'] = $u -> photo;
 }
 
@@ -28,7 +30,40 @@ include '../../head.php';
         <div class="profile-edit-form">
             <div class="edit-input-box">
                 <label>Email:</label>
-                <div><?= $_user->email ? encode($_user->email) : '<span class="profile-empty">Not set</span>' ?></div>
+                <div>
+                    <?= $_user->email ? encode($_user->email) : '<span class="profile-empty">Not set</span>' ?>
+                    <?php if ($_user->email_verified): ?>
+                        <span style="color: #28a745; font-size: 0.9em; margin-left: 10px;">✓ Verified</span>
+                    <?php else: ?>
+                        <span style="color: #dc3545; font-size: 0.9em; margin-left: 10px;">⚠ Not verified</span>
+                        <a href="/page/user/resend_verification.php?email=<?= urlencode($_user->email) ?>" 
+                           style="font-size: 0.85em; margin-left: 5px; color: #007cba; text-decoration: underline;">Verify now</a>
+                    <?php endif; ?>
+                    
+                    <?php
+                    // Check for pending email change verification
+                    $stm = $_db->prepare('SELECT email FROM email_verification_logs WHERE user_id = ? AND action_type = "email_change" AND verified_at IS NULL AND expires_at > NOW() ORDER BY log_id DESC LIMIT 1');
+                    $stm->execute([$_user->id]);
+                    $pending_email = $stm->fetchColumn();
+                    if ($pending_email):
+                    ?>
+                        <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; font-size: 0.9em;">
+                            <strong>📧 Email Change Pending:</strong><br>
+                            New email: <?= encode($pending_email) ?><br>
+                            <span style="color: #856404;">Please check your new email and click the verification link within 5 minutes.</span>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <div class="edit-input-box">
+                <label>Loyalty Points:</label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-size: 1.2em; font-weight: bold; color: #007cba;"><?= number_format($_user->loyalty_points) ?> points</span>
+                    <span style="font-size: 0.9em; color: #666;">
+                        ≈ RM<?= number_format(calculate_discount_from_points($_user->loyalty_points), 2) ?> discount
+                    </span>
+                    <a href="/page/user/loyalty_history.php" style="font-size: 0.9em; color: #007cba; text-decoration: underline;">View History</a>
+                </div>
             </div>
             <div class="edit-input-box">
                 <label>Password:</label>

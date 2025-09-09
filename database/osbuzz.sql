@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 02, 2025 at 10:22 PM
+-- Generation Time: Sep 09, 2025 at 09:58 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -89,6 +89,82 @@ CREATE TABLE `customer_addresses` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `customer_addresses`
+--
+
+INSERT INTO `customer_addresses` (`address_id`, `user_id`, `address_name`, `first_name`, `last_name`, `company`, `address_line_1`, `address_line_2`, `city`, `state`, `postal_code`, `country`, `phone`, `is_default`, `created_at`, `updated_at`) VALUES
+(2, 2, 'home', 'tan', 'ea', '', 'asdad', '', 'setapak', 'WP_LBN', '123456', 'Malaysia', '60177438690', 1, '2025-09-03 09:23:57', '2025-09-03 09:28:31');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `email_verification_logs`
+--
+
+CREATE TABLE `email_verification_logs` (
+  `log_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `action_type` enum('registration','email_change') NOT NULL,
+  `sent_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `verified_at` timestamp NULL DEFAULT NULL,
+  `expires_at` timestamp NOT NULL DEFAULT (current_timestamp() + interval 5 minute),
+  `ip_address` varchar(45) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `loyalty_settings`
+--
+
+CREATE TABLE `loyalty_settings` (
+  `setting_id` int(11) NOT NULL,
+  `setting_key` varchar(50) NOT NULL,
+  `setting_value` text NOT NULL,
+  `description` text DEFAULT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `loyalty_settings`
+--
+
+INSERT INTO `loyalty_settings` (`setting_id`, `setting_key`, `setting_value`, `description`, `updated_at`) VALUES
+(1, 'points_per_ringgit', '1', 'Points earned per RM spent', '2025-09-09 16:48:35'),
+(2, 'points_to_ringgit_ratio', '100', 'Points needed to get RM1 discount', '2025-09-09 16:48:35'),
+(3, 'minimum_points_redeem', '100', 'Minimum points required to redeem', '2025-09-09 16:48:35'),
+(4, 'maximum_discount_percentage', '50', 'Maximum percentage of order that can be paid with points', '2025-09-09 16:48:35'),
+(5, 'points_expiry_months', '12', 'Points expire after X months (0 = never expire)', '2025-09-09 16:48:35'),
+(6, 'signup_bonus_points', '100', 'Points awarded for new registration', '2025-09-09 16:48:35');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `loyalty_transactions`
+--
+
+CREATE TABLE `loyalty_transactions` (
+  `transaction_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `order_id` int(11) DEFAULT NULL,
+  `points` int(11) NOT NULL COMMENT 'Positive for earning, negative for spending',
+  `transaction_type` enum('earned','redeemed','expired','bonus','refund') NOT NULL,
+  `description` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `loyalty_transactions`
+--
+
+INSERT INTO `loyalty_transactions` (`transaction_id`, `user_id`, `order_id`, `points`, `transaction_type`, `description`, `created_at`) VALUES
+(1, 1, NULL, 100, 'bonus', 'Welcome bonus for existing member', '2025-09-09 19:50:49'),
+(2, 2, NULL, 100, 'bonus', 'Welcome bonus for existing member', '2025-09-09 19:50:49'),
+(5, 3, NULL, 100, 'bonus', 'Email verification bonus', '2025-09-09 19:57:00');
+
 -- --------------------------------------------------------
 
 --
@@ -103,6 +179,8 @@ CREATE TABLE `orders` (
   `shipping_fee` decimal(10,2) DEFAULT 0.00,
   `tax_amount` decimal(10,2) DEFAULT 0.00,
   `grand_total` decimal(10,2) NOT NULL,
+  `loyalty_points_used` int(11) DEFAULT 0,
+  `loyalty_discount` decimal(10,2) DEFAULT 0.00,
   `order_status` enum('pending','processing','shipped','delivered','cancelled','refunded') DEFAULT 'pending',
   `payment_status` enum('pending','paid','failed','refunded') DEFAULT 'pending',
   `payment_method` enum('paypal','credit_card','bank_transfer','cash_on_delivery') DEFAULT 'paypal',
@@ -188,7 +266,7 @@ CREATE TABLE `product` (
 --
 
 INSERT INTO `product` (`product_id`, `product_name`, `brand`, `category_id`, `price`, `description`, `photo`, `created_at`, `status`) VALUES
-(1, 'Trending Men\'s Designer Sneaker Breathable Hard Wearing Sponge Insole Sports Shoes Man Casual Runnin', 'Speedy Sorrce', 1, 25.00, '2025 Men’s Sports Running Shoes\r\nLightweight and breathable sneakers with a durable sponge insole for all-day comfort. Stylish gradient design with strong grip sole, perfect for running, workouts, or casual wear.', '68b6cba026792.png', '2025-09-02 10:04:15', 'active'),
+(1, 'Trending Men\'s Designer Sneaker Breathable Hard Wearing Sponge Insole Sports Shoes Man Casual Running', 'Speedy Sorrce', 1, 25.00, '2025 Men’s Sports Running Shoes\r\nLightweight and breathable sneakers with a durable sponge insole for all-day comfort. Stylish gradient design with strong grip sole, perfect for running, workouts, or casual wear.', '68b6cba026792.png', '2025-09-02 10:04:15', 'active'),
 (2, 'Weshine Sneaker Manufacture Custom Wholesale Men\'s Mesh Casual Sneakers Fly Knitting Upper Design Ru', 'Customization', 1, 49.99, 'Men’s Mesh Casual Running Shoes\r\nBreathable fly-knit upper with cushioned sole for comfort and support. Lightweight, stylish, and durable—perfect for running, training, or everyday wear.', '68b6d1f7f16aa.png', '2025-09-02 10:12:21', 'active'),
 (3, 'Knitting Carbon Plate Casual Running Shoes Unisex Breathable & Non-Slip Sports Shoes Factory Direct', 'OEM ACCEPTABLE', 1, 69.90, 'Unisex Carbon Plate Running Shoes\r\nBreathable knit upper with carbon plate support for extra performance. Lightweight, non-slip sole for stability—ideal for running, training, and daily wear.', '68b6d20ed71c6.png', '2025-09-02 10:16:21', 'active'),
 (4, 'High Quality Breathable Large Size Mens Running Shoes Ultra Lightweight Knit Upper MD Rubber Studs C', 'OEM ACCEPTABLE', 1, 50.99, 'Unisex Carbon Plate Running Shoes\r\nBreathable knit upper with carbon plate support for extra performance. Lightweight, non-slip sole for stability—ideal for running, training, and daily wear.', '68b6d22a62df2.png', '2025-09-02 10:20:24', 'active'),
@@ -462,7 +540,7 @@ INSERT INTO `product_variants` (`variant_id`, `product_id`, `size`, `stock`) VAL
 (4, 1, '36', 2),
 (5, 1, '37', 3),
 (6, 1, '45', 1),
-(7, 1, '44', 4),
+(7, 1, '44', 3),
 (8, 1, '43', 2),
 (9, 1, '38', 2),
 (10, 1, '39', 5),
@@ -474,7 +552,7 @@ INSERT INTO `product_variants` (`variant_id`, `product_id`, `size`, `stock`) VAL
 (16, 81, '37', 5),
 (17, 81, '38', 6),
 (18, 81, '39', 5),
-(19, 80, '38', 10),
+(19, 80, '38', 7),
 (20, 80, '37', 5),
 (21, 79, '38', 2),
 (22, 79, '36', 4),
@@ -494,16 +572,24 @@ CREATE TABLE `user` (
   `photo` varchar(255) NOT NULL,
   `role` enum('Admin','Member') NOT NULL DEFAULT 'Member',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `status` enum('active','banned') DEFAULT 'active'
+  `status` enum('active','banned') DEFAULT 'active',
+  `loyalty_points` int(11) NOT NULL DEFAULT 0,
+  `email_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `email_verification_token` varchar(255) DEFAULT NULL,
+  `email_verification_expires` timestamp NULL DEFAULT NULL,
+  `pending_email` varchar(100) DEFAULT NULL,
+  `pending_email_token` varchar(255) DEFAULT NULL,
+  `pending_email_expires` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`id`, `username`, `email`, `password`, `photo`, `role`, `created_at`, `status`) VALUES
-(1, 'admin', 'admin@osbuzz.com', 'f865b53623b121fd34ee5426c792e5c33af8c227', '', 'Admin', '2025-09-02 09:08:37', 'active'),
-(2, 'eason', 'tanes-wp23@student.tarc.edu.my', '7c222fb2927d828af22f592134e8932480637c0d', '', 'Member', '2025-09-02 19:46:43', 'active');
+INSERT INTO `user` (`id`, `username`, `email`, `password`, `photo`, `role`, `created_at`, `status`, `loyalty_points`, `email_verified`, `email_verification_token`, `email_verification_expires`, `pending_email`, `pending_email_token`, `pending_email_expires`) VALUES
+(1, 'admin', 'admin@osbuzz.com', 'f865b53623b121fd34ee5426c792e5c33af8c227', '', 'Admin', '2025-09-02 09:08:37', 'active', 100, 1, NULL, NULL, NULL, NULL, NULL),
+(2, 'eason', 'taneason0912@gmail.com', '7c222fb2927d828af22f592134e8932480637c0d', '', 'Member', '2025-09-02 19:46:43', 'active', 100, 1, NULL, NULL, NULL, NULL, NULL),
+(3, 'Tan', 'tanes-wp23@student.tarc.edu.my', '697f6f62764c05183042401e6bc74c6704a3da7d', '', 'Member', '2025-09-09 19:52:32', 'active', 100, 1, NULL, NULL, NULL, NULL, NULL);
 
 --
 -- Indexes for dumped tables
@@ -532,6 +618,29 @@ ALTER TABLE `customer_addresses`
   ADD PRIMARY KEY (`address_id`),
   ADD KEY `fk_addresses_user` (`user_id`),
   ADD KEY `idx_is_default` (`is_default`);
+
+--
+-- Indexes for table `email_verification_logs`
+--
+ALTER TABLE `email_verification_logs`
+  ADD PRIMARY KEY (`log_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `token` (`token`);
+
+--
+-- Indexes for table `loyalty_settings`
+--
+ALTER TABLE `loyalty_settings`
+  ADD PRIMARY KEY (`setting_id`),
+  ADD UNIQUE KEY `setting_key` (`setting_key`);
+
+--
+-- Indexes for table `loyalty_transactions`
+--
+ALTER TABLE `loyalty_transactions`
+  ADD PRIMARY KEY (`transaction_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `order_id` (`order_id`);
 
 --
 -- Indexes for table `orders`
@@ -623,7 +732,25 @@ ALTER TABLE `category`
 -- AUTO_INCREMENT for table `customer_addresses`
 --
 ALTER TABLE `customer_addresses`
-  MODIFY `address_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `address_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `email_verification_logs`
+--
+ALTER TABLE `email_verification_logs`
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `loyalty_settings`
+--
+ALTER TABLE `loyalty_settings`
+  MODIFY `setting_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `loyalty_transactions`
+--
+ALTER TABLE `loyalty_transactions`
+  MODIFY `transaction_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `orders`
@@ -671,7 +798,7 @@ ALTER TABLE `product_variants`
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables
@@ -689,6 +816,21 @@ ALTER TABLE `cart`
 --
 ALTER TABLE `customer_addresses`
   ADD CONSTRAINT `customer_addresses_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `email_verification_logs`
+--
+ALTER TABLE `email_verification_logs`
+  ADD CONSTRAINT `fk_email_verification_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `loyalty_transactions`
+--
+ALTER TABLE `loyalty_transactions`
+  ADD CONSTRAINT `fk_loyalty_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_loyalty_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `loyalty_transactions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `loyalty_transactions_ibfk_2` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `orders`

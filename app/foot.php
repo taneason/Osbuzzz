@@ -19,7 +19,9 @@
                     <li><a href="/page/admin/admin_user.php">Users</a></li>
                     <li><a href="/page/admin/admin_category.php">Categories</a></li>
                     <li><a href="/page/admin/admin_orders.php">Orders</a></li>
-                    <li><a href="/page/admin/password_reset_management.php">Password Resets Requests</a></li>
+                    <li><a href="/page/admin/cleanup_users.php">User Cleanup</a></li>
+                    <li><a href="/page/admin/loyalty_settings.php">Loyalty Settings</a></li>
+                    <li><a href="/page/admin/password_reset_management.php">Password Resets</a></li>
                 </ul>
             </div>
             <?php else: ?>
@@ -36,6 +38,7 @@
                     <li><a href="/page/user/profile.php">My Profile</a></li>
                     <li><a href="/page/shop/cart.php">My Cart</a></li>
                     <li><a href="/page/user/orders.php">My Orders</a></li>
+                    <li><a href="/page/user/loyalty_history.php">My Points</a></li>
                     <li><a href="/page/user/logout.php">Logout</a></li>
 
                     <?php endif; ?>
