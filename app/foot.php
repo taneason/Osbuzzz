@@ -4,7 +4,7 @@
         <div class="containers">
             <div class="footer-content">
                 <h3>Contact Us</h3>
-                <p>Email: Osbuzzz@gmail.com<br><br>Phone: +60 10-2288878<br><br>Address: Malaysia<br><br>
+                <p>Email: osbuzzz@gmail.com<br><br>Phone: +60 10-2288878<br><br>Address: Malaysia<br><br>
                 <div class="ins">
                     <img src="/images/insLogo.png"> <a href="https://www.instagram.com/osbuzzz?igsh=bnhvaDg1eHd5Z2Z0">Osbuzzz</a>
                     </div>
@@ -68,7 +68,7 @@
         
         <div class="bottom-bar">
             <small><i><p>Copyright © 2025 Osbuzzz - Premium Footwear Store</p></i></small>
-            <a href="mailto:Osbuzzz@gmail.com">Osbuzzz@gmail.com</a>
+            <a href="mailto:osbuzzz@gmail.com">osbuzzz@gmail.com</a>
         </div>
     </footer>
 

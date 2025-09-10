@@ -214,10 +214,50 @@ if (is_post()) {
         if ($phone == '') {
             $_err['phone'] = 'Phone number is required';
             $error_class_phone = 'class="error"';
+        } else if (!validate_malaysian_phone($phone)) {
+            $_err['phone'] = 'Please enter a valid Malaysian phone number (e.g., 012-345-6789)';
+            $error_class_phone = 'class="error"';
+        }
+        
+        if (!$payment_method) {
+            $_err['payment_method'] = 'Please select a payment method';
         }
     }
     
     if (!$_err) {
+        // If using new address, save it to customer_addresses table as default
+        if (!$use_saved_address) {
+            try {
+                // Check if user has any existing addresses
+                $stm = $_db->prepare('SELECT COUNT(*) FROM customer_addresses WHERE user_id = ?');
+                $stm->execute([$_user->id]);
+                $address_count = $stm->fetchColumn();
+                
+                // Always set new checkout address as default
+                $is_default = 1;
+                
+                // Remove default from other addresses
+                $stm = $_db->prepare('UPDATE customer_addresses SET is_default = 0 WHERE user_id = ?');
+                $stm->execute([$_user->id]);
+                
+                // Insert new address with a default name
+                $address_name = 'Checkout Address ' . date('M j, Y');
+                $stm = $_db->prepare('
+                    INSERT INTO customer_addresses (
+                        user_id, address_name, first_name, last_name, company,
+                        address_line_1, address_line_2, city, state, postal_code, phone, is_default
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ');
+                $stm->execute([
+                    $_user->id, $address_name, $first_name, $last_name, $company,
+                    $address_line_1, $address_line_2, $city, $state, $postal_code, $phone, $is_default
+                ]);
+                
+            } catch (Exception $e) {
+                // If address saving fails, continue with checkout (don't block the order)
+                error_log("Failed to save checkout address: " . $e->getMessage());
+            }
+        }
         
         // Store checkout data in session for payment processing
         $_SESSION['checkout_data'] = [
@@ -380,8 +420,11 @@ include '../../head.php';
                         
                         <div class="form-group">
                             <label for="phone">Phone Number <span class="required">*</span></label>
-                            <?= html_text('phone', 'placeholder="01X-XXX-XXXX" '.$error_class_phone) ?>
+                            <?= html_text('phone', 'placeholder="012-345-6789 or 03-1234-5678" '.$error_class_phone) ?>
                             <?= err('phone') ?>
+                            <small style="color: #666; font-size: 0.9em; margin-top: 5px; display: block;">
+                                Enter Malaysian phone number (mobile: 01X-XXX-XXXX, landline: 0X-XXXX-XXXX)
+                            </small>
                         </div>
                         
                         <div class="form-group">
@@ -1016,6 +1059,47 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Clear the discount when unchecked
                 clearLoyaltyDiscount();
             }
+        });
+    }
+    
+    // Auto-format Malaysian phone number as user types
+    const phoneInput = document.getElementById('phone');
+    
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
+            
+            // Format mobile numbers (01X-XXX-XXXX)
+            if (value.startsWith('01') && value.length >= 3) {
+                if (value.length <= 3) {
+                    value = value;
+                } else if (value.length <= 6) {
+                    value = value.slice(0, 3) + '-' + value.slice(3);
+                } else if (value.length <= 10) {
+                    value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6);
+                } else {
+                    value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 11);
+                }
+            }
+            // Format landline numbers (0X-XXXX-XXXX)
+            else if (value.startsWith('0') && value.length >= 2) {
+                if (value.length <= 2) {
+                    value = value;
+                } else if (value.length <= 6) {
+                    value = value.slice(0, 2) + '-' + value.slice(2);
+                } else if (value.length <= 10) {
+                    value = value.slice(0, 2) + '-' + value.slice(2, 6) + '-' + value.slice(6);
+                }
+            }
+            
+            e.target.value = value;
+        });
+        
+        // Handle paste events
+        phoneInput.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                phoneInput.dispatchEvent(new Event('input'));
+            }, 10);
         });
     }
 });
