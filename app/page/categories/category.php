@@ -24,7 +24,7 @@ $offset = ($page - 1) * $limit;
 if ($page < 1) $page = 1;
 
 // Sorting and filtering
-$sort = $_GET['sort'] ?? 'newest';
+$sort = $_GET['sort'] ?? '';
 $min_price = $_GET['min_price'] ?? '';
 $max_price = $_GET['max_price'] ?? '';
 
@@ -42,21 +42,39 @@ if ($max_price !== '' && is_numeric($max_price)) {
     $params[] = (float)$max_price;
 }
 
+// Validate price range (backend validation)
+if ($min_price !== '' && $max_price !== '' && is_numeric($min_price) && is_numeric($max_price)) {
+    if ((float)$max_price < (float)$min_price) {
+        // Reset invalid price range
+        $min_price = '';
+        $max_price = '';
+        // Remove price filters from where clause and params
+        $where = str_replace([' AND p.price >= ?', ' AND p.price <= ?'], '', $where);
+        $params = array_slice($params, 0, -2); // Remove last 2 parameters
+        
+        // Set error message
+        temp('error', 'Invalid price range: Maximum price cannot be less than minimum price.');
+    }
+}
+
 // Build ORDER BY clause
-$orderBy = 'ORDER BY p.created_at DESC';
+$orderBy = 'ORDER BY (COALESCE(SUM(pv.stock), 0) > 0) DESC, p.created_at DESC';
 switch ($sort) {
     case 'price_low':
-        $orderBy = 'ORDER BY p.price ASC';
+        $orderBy = 'ORDER BY (COALESCE(SUM(pv.stock), 0) > 0) DESC, p.price ASC';
         break;
     case 'price_high':
-        $orderBy = 'ORDER BY p.price DESC';
+        $orderBy = 'ORDER BY (COALESCE(SUM(pv.stock), 0) > 0) DESC, p.price DESC';
         break;
     case 'name':
-        $orderBy = 'ORDER BY p.product_name ASC';
+        $orderBy = 'ORDER BY (COALESCE(SUM(pv.stock), 0) > 0) DESC, p.product_name ASC';
         break;
     case 'newest':
-    default:
         $orderBy = 'ORDER BY p.created_at DESC';
+        break;
+    case '':
+    default:
+        $orderBy = 'ORDER BY (COALESCE(SUM(pv.stock), 0) > 0) DESC, p.created_at DESC';
         break;
 }
 
@@ -228,6 +246,7 @@ include '../../head.php';
             <div class="filter-group">
                 <label for="sort-filter">Sort by:</label>
                 <select id="sort-filter">
+                    <option value="" <?= $sort == '' ? 'selected' : '' ?>>Default (Stock First)</option>
                     <option value="newest" <?= $sort == 'newest' ? 'selected' : '' ?>>Newest First</option>
                     <option value="price_low" <?= $sort == 'price_low' ? 'selected' : '' ?>>Price: Low to High</option>
                     <option value="price_high" <?= $sort == 'price_high' ? 'selected' : '' ?>>Price: High to Low</option>

@@ -191,7 +191,7 @@ include '../../head.php';
         <div class="support-info">
             <h3>Need Help?</h3>
             <p>If you have any questions about your order, please contact our customer support:</p>
-            <p>Email: Osbuzzz@gmail.com | Phone: +60 10-2288878</p>
+            <p>Email: osbuzzz@gmail.com | Phone: +60 10-2288878</p>
         </div>
     </div>
 </main>

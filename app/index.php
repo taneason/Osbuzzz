@@ -14,7 +14,7 @@ if (isset($_db)) {
 // Fetch top 5 best selling products
 $top_products = [];
 if (isset($_db)) {
-    $stmt = $_db->prepare("
+       $stmt = $_db->prepare("
         SELECT 
             p.product_id,
             p.product_name,

@@ -733,23 +733,23 @@ function send_order_confirmation_email($order_id) {
                         </tr>
                         <tr class='total-row'>
                             <td colspan='2' style='padding: 15px 10px; text-align: right;'>Shipping:</td>
-                            <td style='padding: 15px 10px; text-align: right;'>RM" . number_format($order->shipping_fee, 2) . "</td>
+                            <td style='padding: 15px 10px; text-align: right;'>RM" . number_format($order->shipping_fee ?? 0, 2) . "</td>
                         </tr>
                         <tr class='total-row'>
                             <td colspan='2' style='padding: 15px 10px; text-align: right;'>Tax:</td>
-                            <td style='padding: 15px 10px; text-align: right;'>RM" . number_format($order->tax_amount, 2) . "</td>
+                            <td style='padding: 15px 10px; text-align: right;'>RM" . number_format($order->tax_amount ?? 0, 2) . "</td>
                         </tr>";
         
         // Add loyalty discount row if used
         if (isset($order->loyalty_points_used) && $order->loyalty_points_used > 0) {
-            $items_html .= "
+            $mail->Body .= "
                         <tr style='color: #28a745; background: #d4edda;'>
                             <td colspan='2' style='padding: 15px 10px; text-align: right;'>🎉 Loyalty Discount (-" . number_format($order->loyalty_points_used) . " points):</td>
-                            <td style='padding: 15px 10px; text-align: right; font-weight: bold;'>-RM" . number_format($order->loyalty_discount, 2) . "</td>
+                            <td style='padding: 15px 10px; text-align: right; font-weight: bold;'>-RM" . number_format($order->loyalty_discount ?? 0, 2) . "</td>
                         </tr>";
         }
         
-        $items_html .= "
+        $mail->Body .= "
                         <tr class='grand-total'>
                             <td colspan='2' style='padding: 15px 10px; text-align: right;'>Grand Total:</td>
                             <td style='padding: 15px 10px; text-align: right;'>RM" . number_format($order->grand_total, 2) . "</td>

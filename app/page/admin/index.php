@@ -41,7 +41,7 @@ $stats['recent_products'] = $stm->fetchColumn();
 $stm = $_db->query("SELECT COUNT(*) as total FROM orders");
 $stats['total_orders'] = $stm->fetchColumn();
 
-$stm = $_db->query("SELECT COUNT(*) as total FROM orders WHERE order_status = 'processing'");
+$stm = $_db->query("SELECT COUNT(*) as total FROM orders WHERE order_status = 'processing' OR order_status = 'pending'");
 $stats['pending_orders'] = $stm->fetchColumn();
 
 $stm = $_db->query("SELECT COALESCE(SUM(grand_total), 0) as total FROM orders WHERE order_status != 'cancelled'");
