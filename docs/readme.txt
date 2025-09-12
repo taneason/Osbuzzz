@@ -14,3 +14,6 @@ osbuzzz12345------passwd
 username: admin
 password: admin123
 
+//user
+username: eason
+password: 12345678
