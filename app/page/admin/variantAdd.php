@@ -29,15 +29,12 @@ if (is_post()) {
 include '../../head.php';
 ?>
 <main>
-    <h1 class="admin-form-title">Add Product</h1>
+    <h1 class="admin-form-title">Add Product Variant</h1>
     <form method="post" enctype="multipart/form-data" class="admin-edit-form" novalidate>
         <fieldset style="border-radius: 10px;">
         <div class="admin-form-grid">
             <!-- Variant info -->
-            <div class="admin-form-row admin-form-row-full">
-                <h3 class="admin-form-subtitle ">Variant</h3> 
-            </div>
-
+            
             <div class="admin-form-row">
                 <label><b>Size</b></label>
                 <?=html_select('size', $SIZES,'-- Select Size --'); ?>

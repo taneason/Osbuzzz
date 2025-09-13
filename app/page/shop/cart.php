@@ -115,12 +115,14 @@ include '../../head.php';
                             
                             <!-- Item Image -->
                             <div class="item-image">
-                                <img src="../../images/Products/<?= $item->photo ?>" alt="<?= encode($item->name) ?>">
+                                <a href="product_detail.php?id=<?= $item->product_id ?>" class="product-link">
+                                    <img src="../../images/Products/<?= $item->photo ?>" alt="<?= encode($item->name) ?>">
+                                </a>
                             </div>
                             
                             <!-- Item Details -->
                             <div class="item-details">
-                                <h3><?= encode($item->name) ?></h3>
+                                <h3><a href="product_detail.php?id=<?= $item->product_id ?>" class="product-link"><?= encode($item->name) ?></a></h3>
                                 <p class="brand">Brand: <?= encode($item->brand) ?></p>
                                 <?php if ($item->size): ?>
                                     <p class="size">Size: <?= format_size($item->size) ?></p>
@@ -417,6 +419,29 @@ include '../../head.php';
     height: 100%;
     object-fit: cover;
     border-radius: 6px;
+    transition: transform 0.3s ease;
+}
+
+.product-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.product-link:hover .item-image img,
+.item-image .product-link:hover img {
+    transform: scale(1.05);
+}
+
+.item-details h3 .product-link {
+    color: #2c3e50;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.item-details h3 .product-link:hover {
+    color: #3498db;
+    text-decoration: underline;
 }
 
 .item-details {
