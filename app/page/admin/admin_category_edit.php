@@ -24,6 +24,13 @@ if (is_post()) {
     // Validation
     if (!$category_name) {
         $_err['category_name'] = 'Category name is required';
+    } else {
+        // Ensure unique name excluding current category id
+        $stm = $_db->prepare('SELECT COUNT(*) FROM category WHERE category_name = ? AND category_id != ?');
+        $stm->execute([$category_name, $category_id]);
+        if ($stm->fetchColumn() > 0) {
+            $_err['category_name'] = 'Category name already exists';
+        }
     }
     
     if (!$_err) {
@@ -67,14 +74,6 @@ include '../../head.php';
 ?>
 
 <main>
-    <?php if ($_err): ?>
-        <div style="color: red; margin-bottom: 20px; padding: 10px; border: 1px solid red; border-radius: 5px;">
-            <?php foreach ($_err as $error): ?>
-                <div><?= $error ?></div>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
-    
     <h1 class="admin-form-title">Edit Category</h1>
     <form method="post" enctype="multipart/form-data" class="admin-edit-form" novalidate>
         <fieldset style="border-radius: 10px;">
@@ -83,6 +82,7 @@ include '../../head.php';
             <div class="admin-form-row admin-form-row-full">
                 <label><b>Category Name</b></label>
                 <?= html_text('category_name', 'maxlength="50" placeholder="Category Name" class="admin-form-input" required') ?>
+                <?= err('category_name') ?>
             </div>
             
             <div class="admin-form-row admin-form-row-full">

@@ -12,6 +12,9 @@ if (is_post()) {
     if (!$category_name) {
         $_err['category_name'] = 'Category name is required';
     }
+    else if (!is_unique($category_name, 'category', 'category_name')) {
+        $_err['category_name'] = 'Category name already exists';
+    }
     
     if (!$_err) {
         // Handle banner image upload
@@ -42,13 +45,6 @@ include '../../head.php';
 ?>
 
 <main>
-    <?php if ($_err): ?>
-        <div style="color: red; margin-bottom: 20px; padding: 10px; border: 1px solid red; border-radius: 5px;">
-            <?php foreach ($_err as $error): ?>
-                <div><?= $error ?></div>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
     
     <h1 class="admin-form-title">Add Category</h1>
     <form method="post" enctype="multipart/form-data" class="admin-edit-form" novalidate>
@@ -58,6 +54,7 @@ include '../../head.php';
             <div class="admin-form-row admin-form-row-full">
                 <label><b>Category Name</b></label>
                 <?= html_text('category_name', 'maxlength="50" placeholder="Category Name" class="admin-form-input" required') ?>
+                <?= err('category_name') ?>
             </div>
             
             <div class="admin-form-row admin-form-row-full">
