@@ -55,6 +55,7 @@ include '../../head.php';
                     <?php endif; ?>
                 </div>
             </div>
+            <?php if ($_user && $_user->role != 'Admin'): ?>
             <div class="edit-input-box">
                 <label>Loyalty Points:</label>
                 <div style="display: flex; align-items: center; gap: 15px;">
@@ -65,6 +66,7 @@ include '../../head.php';
                     <a href="/page/user/loyalty_history.php" style="font-size: 0.9em; color: #007cba; text-decoration: underline;">View History</a>
                 </div>
             </div>
+            <?php endif; ?>
             <div class="edit-input-box">
                 <label>Password:</label>
                 <div>
@@ -72,6 +74,7 @@ include '../../head.php';
                     <a href="/page/user/changePass.php" style="font-size:0.95em;margin-left:10px;color:#3793af;text-decoration:underline;">Change</a>
                 </div>
             </div>
+            <?php if ($_user && $_user->role != 'Admin'): ?>
             <div class="edit-input-box">
                 <label>Shipping Addresses:</label>
                 <div>
@@ -86,6 +89,7 @@ include '../../head.php';
                     <span style="font-size:0.9em;color:#666;margin-left:10px;">Track your purchases</span>
                 </div>
             </div>
+            <?php endif; ?>
             <form id="changeProfileForm" action="/page/user/profileEdit.php" method="get" style="margin-top:24px;">
                 <button type="submit" class="edit-btn">Edit Profile</button>
             </form>

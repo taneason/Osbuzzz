@@ -1,6 +1,12 @@
 <?php
 require 'base.php';
 
+// If current user is an admin, redirect to the admin dashboard before any output is sent
+if (isset($_user) && $_user && isset($_user->role) && $_user->role === 'Admin') {
+    header('Location: /page/admin/index.php');
+    exit;
+}
+
 include 'head.php';
 
 // Fetch categories from database
@@ -146,17 +152,7 @@ if (isset($_db)) {
     </section>
 </main>
 <?php else: ?>
-<main>
-    <h1 class="admin-title">Welcome to Admin Dashboard</h1>
-    <div class="admin-dashboard">
-        <div class="admin-card">
-            <a href="/page/admin/admin_user.php">User Management</a>
-        </div>
-        <div class="admin-card">
-            <a href="/page/admin/admin_product.php">Product Management</a>
-        </div>
-    </div>
-</main>
+    <!-- Admin users are redirected to the admin dashboard before rendering the page -->
 <?php endif ?>  
 <?php
 include 'foot.php';
