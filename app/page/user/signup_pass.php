@@ -92,7 +92,7 @@ if (is_post()) {
                 temp('info', 'Registration successful! Please check your email to verify your account.');
                 redirect('/page/user/signup_success.php');
             } else {
-                temp('info', 'Registration successful! Welcome to OSBuzz!');
+                temp('info', 'Registration successful! Welcome to Osbuzzz!');
                 redirect('login.php');
             }
             

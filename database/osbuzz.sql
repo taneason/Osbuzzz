@@ -162,9 +162,8 @@ CREATE TABLE `loyalty_transactions` (
 --
 
 INSERT INTO `loyalty_transactions` (`transaction_id`, `user_id`, `order_id`, `points`, `transaction_type`, `description`, `created_at`) VALUES
-(1, 1, NULL, 100, 'bonus', 'Welcome bonus for existing member', '2025-09-09 19:50:49'),
-(2, 2, NULL, 100, 'bonus', 'Welcome bonus for existing member', '2025-09-09 19:50:49'),
-(3, 3, NULL, 100, 'bonus', 'Email verification bonus', '2025-09-09 19:57:00');
+(1, 2, NULL, 100, 'bonus', 'Welcome bonus for new member', '2025-09-09 19:50:49'),
+(2, 3, NULL, 100, 'bonus', 'Welcome bonus for new member', '2025-09-09 19:57:00');
 
 -- --------------------------------------------------------
 
@@ -818,7 +817,7 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id`, `username`, `email`, `password`, `photo`, `role`, `created_at`, `status`, `loyalty_points`, `email_verified`, `email_verification_token`, `email_verification_expires`, `pending_email`, `pending_email_token`, `pending_email_expires`) VALUES
-(1, 'admin', 'admin@osbuzz.com', 'f865b53623b121fd34ee5426c792e5c33af8c227', '', 'Admin', '2025-09-02 09:08:37', 'active', 100, 1, NULL, NULL, NULL, NULL, NULL),
+(1, 'admin', 'admin@osbuzz.com', 'f865b53623b121fd34ee5426c792e5c33af8c227', '', 'Admin', '2025-09-02 09:08:37', 'active', 0, 1, NULL, NULL, NULL, NULL, NULL),
 (2, 'eason', 'taneason0912@gmail.com', '7c222fb2927d828af22f592134e8932480637c0d', '', 'Member', '2025-09-02 19:46:43', 'active', 100, 1, NULL, NULL, NULL, NULL, NULL),
 (3, 'Tan', 'tanes-wp23@student.tarc.edu.my', '697f6f62764c05183042401e6bc74c6704a3da7d', '', 'Member', '2025-09-09 19:52:32', 'active', 494, 1, NULL, NULL, NULL, NULL, NULL);
 
@@ -981,7 +980,7 @@ ALTER TABLE `loyalty_settings`
 -- AUTO_INCREMENT for table `loyalty_transactions`
 --
 ALTER TABLE `loyalty_transactions`
-  MODIFY `transaction_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `transaction_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `orders`

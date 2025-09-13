@@ -1417,7 +1417,7 @@ function verify_email_token($token) {
             // Award signup bonus points
             $signup_bonus = (int)get_loyalty_setting('signup_bonus_points', 100);
             if ($signup_bonus > 0) {
-                add_loyalty_transaction($verification->user_id, $signup_bonus, 'bonus', 'Email verification bonus');
+                add_loyalty_transaction($verification->user_id, $signup_bonus, 'bonus', 'Welcome bonus for new member');
             }
             
         } else if ($verification->action_type === 'email_change') {

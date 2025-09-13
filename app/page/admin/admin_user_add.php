@@ -29,9 +29,10 @@ if (is_post()) {
 
     // --- Insert into DB ---
     if (!$_err) {
-        $stm = $_db->prepare("INSERT INTO user (username, email, password, photo, role, created_at) 
-                              VALUES (?, ?, SHA1(?), '', 'Admin', NOW())");
-        $stm->execute([$username, $email, $password]);
+    // Mark admin accounts as email_verified = 1 by default
+    $stm = $_db->prepare("INSERT INTO user (username, email, password, photo, role, created_at, email_verified, email_verification_token, email_verification_expires, pending_email, pending_email_token, pending_email_expires) 
+                  VALUES (?, ?, SHA1(?), '', 'Admin', NOW(), 1, NULL, NULL, NULL, NULL, NULL)");
+    $stm->execute([$username, $email, $password]);
 
         temp('info', 'Admin user created successfully.');
         redirect('/page/admin/admin_user.php');
