@@ -823,7 +823,7 @@ include '../../head.php';
 }
 
 .modal-form {
-    padding: 20px;
+    padding: 40px;
 }
 
 .form-group {
