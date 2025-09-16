@@ -272,36 +272,37 @@ include '../../head.php';
         <?php endif; ?>
         
         <?php elseif ($search_query): ?>
-        <div class="no-results" style="text-align: center; padding: 60px 20px; color: #666;">
-            <h3>No products found</h3>
-            <p>Try adjusting your search terms or browse our categories:</p>
-            <div style="margin-top: 20px;">
-                <a href="../categories/category.php?id=1" style="margin: 0 10px; color: #007cba;">Running</a>
-                <a href="../categories/category.php?id=2" style="margin: 0 10px; color: #007cba;">Casual</a>
-                <a href="../categories/category.php?id=3" style="margin: 0 10px; color: #007cba;">Formal</a>
-                <a href="../categories/category.php?id=4" style="margin: 0 10px; color: #007cba;">Basketball</a>
-                <a href="../categories/category.php?id=5" style="margin: 0 10px; color: #007cba;">Other</a>
-            </div>
-        </div>
-        
-        <?php else: ?>
-        <div class="search-suggestions" style="text-align: center; padding: 60px 20px; color: #666;">
-            <h3>What are you looking for?</h3>
-            <p>Search for products by name, brand, or category.</p>
-            <div style="margin-top: 30px;">
-                <h4>Popular Categories:</h4>
-                <div style="margin-top: 15px;">
-                    <a href="../categories/category.php?id=1" class="category-suggestion" style="display: inline-block; margin: 5px 10px; padding: 8px 16px; background: #f5f5f5; border-radius: 20px; text-decoration: none; color: #333;">Running</a>
-                    <a href="../categories/category.php?id=2" class="category-suggestion" style="display: inline-block; margin: 5px 10px; padding: 8px 16px; background: #f5f5f5; border-radius: 20px; text-decoration: none; color: #333;">Casual</a>
-                    <a href="../categories/category.php?id=3" class="category-suggestion" style="display: inline-block; margin: 5px 10px; padding: 8px 16px; background: #f5f5f5; border-radius: 20px; text-decoration: none; color: #333;">Formal</a>
-                    <a href="../categories/category.php?id=4" class="category-suggestion" style="display: inline-block; margin: 5px 10px; padding: 8px 16px; background: #f5f5f5; border-radius: 20px; text-decoration: none; color: #333;">Basketball</a>
-                    <a href="../categories/category.php?id=5" class="category-suggestion" style="display: inline-block; margin: 5px 10px; padding: 8px 16px; background: #f5f5f5; border-radius: 20px; text-decoration: none; color: #333;">Other</a>
+            <div class="no-results" style="text-align: center; padding: 60px 20px; color: #666;">
+                <h3>No products found</h3>
+                <p>Try adjusting your search terms or browse our categories:</p>
+                <div style="margin-top: 20px;">
+                    <?php foreach ($categories as $cat): ?>
+                        <a href="../categories/category.php?id=<?= $cat->category_id ?>" style="margin: 0 10px; color: #007cba;">
+                            <?= htmlspecialchars($cat->category_name) ?>
+                        </a>
+                    <?php endforeach; ?>
                 </div>
             </div>
-        </div>
+        
+        <?php else: ?>
+            <div class="search-suggestions" style="text-align: center; padding: 60px 20px; color: #666;">
+                <h3>What are you looking for?</h3>
+                <p>Search for products by name, brand, or category.</p>
+                <div style="margin-top: 30px;">
+                    <h4>Popular Categories:</h4>
+                    <div style="margin-top: 15px;">
+                        <?php foreach ($categories as $cat): ?>
+                            <a href="../categories/category.php?id=<?= $cat->category_id ?>" class="category-suggestion" style="display: inline-block; margin: 5px 10px; padding: 8px 16px; background: #f5f5f5; border-radius: 20px; text-decoration: none; color: #333;">
+                                <?= htmlspecialchars($cat->category_name) ?>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
         <?php endif; ?>
     </div>
 </main>
+
 
 <style>
 .category-suggestion:hover {
